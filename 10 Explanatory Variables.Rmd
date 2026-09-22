@@ -7,6 +7,15 @@ output:
     css: style.css
 ---
 
+## Key Concepts | Make the Story More Realistic
+
+- **Inference and intervention:** understanding an association is different from knowing what a managerial action will cause.
+- **Statistical error:** omitted influences remain in $\epsilon$ and can distort estimated relationships.
+- **Multiple explanatory variables:** refine the story and interpret each slope while holding other included variables fixed.
+- **Baseline levels:** interpret categorical differences relative to a reference group.
+
+Today we revisit the **consider** and **build** stages from lecture 07.
+
 ## Marketing Analytics Process
 
 <center>
@@ -60,13 +69,23 @@ Regression and how we interpret the parameter estimates *sounds* like causality,
 - **Statistical inference** is inferring associations (e.g., correlations) between variables.
 - **Causal inference** is inferring *causal* associations between variables.
 
-Discovering associations between variables is *common*. Uncovering causality is *uncommon*. We don't automatically get causality by fitting and evaluating a statistical model. We can come **close** to causality by coming up with a more realistic story...
+We don't automatically get causality by fitting and evaluating a statistical model. A realistic story helps identify alternative explanations and the data or study design needed to distinguish them.
+
+## Consider | What Would Happen If Kroger Intervened?
+
+Lecture 07 asked how Kroger should allocate promotional spending. That decision is about changing the process, not merely describing past sales.
+
+- **Association:** did products with more promotional spending have higher sales?
+- **Causal question:** would increasing spending raise sales for otherwise comparable products and conditions?
+- **Alternative story:** Kroger might spend more when it already expects demand to be high, such as during cold weather.
+
+Which variables would help separate these stories? What could an experiment reveal that the observed spending and sales alone cannot?
 
 ## Realistic Stories Often Require Multiple Variables
 
-Including more than one explanatory variable almost always gives us a more realistic representation of how our data was created (our story).
+Including relevant explanatory variables can give us a more realistic representation of how our data was created (our story). More variables are not automatically better.
 
-$$y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + ... + \beta_p x_p + \epsilon, \text{ where } \epsilon \sim Normal(0, 1)$$
+$$y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + ... + \beta_p x_p + \epsilon, \text{ where } \epsilon \sim Normal(0, \sigma^2)$$
 
 - $y$ is the *outcome* variable.
 - $x_1$ is the 1st *explanatory* variable.
@@ -135,6 +154,20 @@ sim_data <- tibble(
 sim_data
 ```
 
+## Connect the Story to the Indicator Variables
+
+Lecture 07 introduced **dummy coding**: represent categories using binary indicators, with one category serving as the baseline.
+
+Our simulated `feature` has three levels:
+
+| Feature | `feature_coupon` | `feature_ad` |
+|---|---:|---:|
+| None (baseline) | 0 | 0 |
+| Coupon | 1 | 0 |
+| Ad | 0 | 1 |
+
+The coupon and ad slopes compare each promotion with **no feature**, holding the other predictors fixed. Coding `feature` as a single number would instead impose equally spaced contributions for none, coupon, and ad.
+
 ## Finding the Best *Hyperplane*
 
 We still estimate $\beta_0$ , $\beta_1$ , ..., $\beta_p$ by minimizing the sum of the squared residuals.
@@ -188,9 +221,9 @@ tidy(fit_01, conf.int = TRUE) |>
 
 ## Omitted Variable Bias
 
-When adding explanatory variables, we need to do everything we can to include variables that explain the outcome so we don't create **omitted variable bias**.
+In lecture 07, $\epsilon$ contained influences on sales that we left out of the model. **Omitted variable bias** can arise when an omitted influence on the outcome is also related to an included predictor.
 
-Why would omitting an explanatory variable create bias?
+In our simulation, cold temperature affects sales and is associated with more endcap spending. If we omit `temp`, which part of its contribution might the model attribute to `endcaps`?
 
 ```{r}
 # Fit a model with an omitted variable.
@@ -282,6 +315,7 @@ Be thoughtful when adding explanatory variables. ALWAYS come up with a plausible
 - Think carefully about the variables in your data! People often encounter problems when one variable is a *function* of another.
 - Use `cor()` on continuous explanatory variables to check for multicollinearity.
 - Statistical significance and model comparisons can be informative, but **they don't guarantee correct modeling decisions.**
+- Adding controls does not by itself establish causality. Explain why the chosen variables address plausible alternative stories before using the model to recommend an intervention.
 
 ---
 
@@ -340,6 +374,7 @@ bind_rows(
 - Extended regression to include multiple explanatory variables.
 - Introduce plotting for parameter estimates.
 - Used simulated data to demonstrate challenges with adding explanatory variables.
+- Revisited Kroger's intervention question, the influences left in statistical error, and categorical baselines.
 
 *Next Time*
 
