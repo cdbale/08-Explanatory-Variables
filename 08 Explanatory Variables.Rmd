@@ -10,7 +10,7 @@ output:
 ## Today's Learning Goals
 
 - Fit and interpret multiple explanatory variables and categorical baselines.
-- Be able to explain omitted-variable bias and multicollinearity.
+- Explain omitted-variable bias and diagnose multicollinearity using confidence intervals and VIF.
 - Compare estimates, uncertainty, and model fit without hunting for significance.
 - Distinguish customer-profile predictions from managerial intervention effects.
 
@@ -27,12 +27,10 @@ Lectures 06–07 **built, fit, evaluated, and predicted** historical spending. T
 The home-goods retailer wants to understand **which household characteristics distinguish higher-spending customers**, and whether **website activity adds useful information** for planning outreach.
 
 - Which characteristics belong in a plausible spending story?
-- Does a larger household mean the same thing regardless of who lives there?
-- Do more visits and more product views tell us different things?
 
 Our outcome is `PreviousSpend`: spending at this retailer over the previous 12 months.
 
-## Statistical and Causal Inference
+## A Word on Statistical vs. Causal Inference
 
 - **Statistical inference:** learn about associations between variables.
 - **Causal inference:** learn what changing one variable would cause.
@@ -41,15 +39,7 @@ Our outcome is `PreviousSpend`: spending at this retailer over the previous 12 m
 ![](Figures/ice-cream-shark-attacks.png){width=420px}
 </center>
 
-An association can reflect a shared cause. Fitting a regression model does not tell us *why* variables are associated. A plausible story can help identify the *why*.
-
-## Consider | What Could the Retailer Change?
-
-`PreviousSpend` is historical spending, measured **before** the email campaign. `Treatment` records randomized email assignment; `CampaignSpend` is spending in the **following 30 days**.
-
-- Household-profile models describe historical associations. A prediction at a different income is not evidence that raising income would cause that spending difference.
-- For the email decision, compare subsequent outcomes for randomly assigned email and control customers. Randomization helps separate the email from pre-existing customer differences.
-- Adding controls alone does not establish causality. Neither the later email nor its outcomes can explain earlier spending.
+An association can reflect a shared cause. Fitting a regression model does not tell us *why* variables are associated. A realistic story can help identify the *why*.
 
 ## Realistic Stories Often Require Multiple Variables
 
@@ -59,7 +49,9 @@ $$y = \beta_0 + \beta_1 x_1 + \cdots + \beta_p x_p + \epsilon, \qquad \epsilon \
 - $\beta_0$: intercept; $\beta_1,\ldots,\beta_p$: slopes.
 - $\epsilon$: influences on the outcome left outside our story.
 
-Relevant variables can make the story more realistic. More variables are not automatically better.
+Adding more **relevant** variables can make the story more realistic. 
+
+Additional variables are **not** guaranteed to improve your model.
 
 ## Getting Started | The Same Customer Records
 
@@ -70,11 +62,11 @@ library(tidymodels)
 customers <- read_csv("home_goods_customers.csv", show_col_types = FALSE)
 ```
 
-Use the data dictionary to check units and timing. The observed outcome remains `PreviousSpend`, dollars spent at this retailer over the previous 12 months.
+Use the data dictionary to review available data. Our dependent variable remains `PreviousSpend`, dollars spent at this retailer over the previous 12 months.
 
 ## Keep the Model Comparisons Comparable
 
-Use the same customers for every model, so changes reflect the spending story rather than different samples.
+We want to have the same set of customers for each model - so, we'll drop customers with missing values for any variables we might include in our models.
 
 ```{r}
 customer_model_data <- customers |>
@@ -87,20 +79,30 @@ customer_model_data <- customers |>
 nrow(customer_model_data)
 ```
 
-There are **9,603 customers**. One unit is $1,000 of annual income or 100 square feet of home size, respectively.
+This leaves **9,603 customers**.
 
-## Connect the Story to the Indicator Variables
+## Can Our Model Include Categorical Variables?
 
-Lecture 07 used a binary `Homeowner` predictor. For a category with more than two levels, use one fewer indicator than levels and choose a **baseline**.
+Yes! One of our previous models used a binary `Homeowner` predictor. For a variable with more than two categories, the model will use one fewer indicator variables than levels. The dropped level becomes **the baseline**.
 
-| Education | Some college | Bachelor's | Graduate |
-|---|---:|---:|---:|
-| High school or less (baseline) | 0 | 0 | 0 |
-| Some college/associate | 1 | 0 | 0 |
-| Bachelor's | 0 | 1 | 0 |
-| Graduate | 0 | 0 | 1 |
-
-Each indicator slope compares that group with the baseline, holding other included predictors fixed. A single numeric code would impose equally spaced contributions.
+<table class="category-indicator-table">
+<colgroup>
+<col style="width: 43%;">
+<col style="width: 19%;">
+<col style="width: 19%;">
+<col style="width: 19%;">
+</colgroup>
+<thead>
+<tr><th rowspan="2" scope="col">Category</th><th colspan="3" scope="colgroup">Indicator Variables</th></tr>
+<tr><th scope="col">Some college</th><th scope="col">Bachelor's</th><th scope="col">Graduate</th></tr>
+</thead>
+<tbody>
+<tr><td>High school or less (baseline)</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>Some college/associate</td><td>1</td><td>0</td><td>0</td></tr>
+<tr><td>Bachelor's</td><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>Graduate</td><td>0</td><td>0</td><td>1</td></tr>
+</tbody>
+</table>
 
 ## Create the Education Indicators
 
@@ -113,7 +115,7 @@ customer_model_data <- customer_model_data |>
   )
 ```
 
-An intercept plus an indicator for **every** category would be redundant: those indicators sum to one. Leaving out the baseline indicator avoids exact dependence.
+Leaving out the baseline indicator avoids exact dependence.
 
 ## Model 1 | A Broader Household Profile
 
@@ -128,7 +130,7 @@ fit_profile <- linear_reg() |>
       data = customer_model_data)
 ```
 
-These are associations with historical spending. We interpret each slope while holding the other included characteristics fixed.
+Remember: the model will estimate the associations between these variables and historical spending. We interpret each point estimate/association/slope while holding the other included characteristics fixed.
 
 ## Finding the Best *Hyperplane*
 
@@ -138,19 +140,19 @@ Least squares still minimizes the **sum of squared residuals**. One predictor gi
 ![](Figures/hyperplane.png){width=750px}
 </center>
 
+## Interpret the Parameters | Holding Others Fixed
+
+- **Intercept:** expected spending when numeric predictors are zero and categorical variables are at the baseline. Check whether that profile is meaningful!
+- **Continuous slope:** expected difference per unit, **holding other included predictors fixed**.
+- **Indicator slope:** expected difference from the baseline category, **holding other included predictors fixed**.
+
 ## Estimate the Household Relationships
 
 ```{r}
 tidy(fit_profile, conf.int = TRUE)
 ```
 
-## Interpret the Parameters | Holding Others Fixed
-
-- **Intercept:** expected spending when numeric predictors are zero and education is at the baseline. Check whether that profile is meaningful and represented in the data.
-- **Continuous slope:** expected dollar difference per unit, **holding other included predictors fixed**.
-- **Indicator slope:** expected dollar difference from its baseline, **holding other included predictors fixed**.
-
-## Interpret Model 1 | Three Examples
+## Example Interpretations
 
 Holding the other included characteristics fixed:
 
@@ -185,13 +187,48 @@ tidy(fit_profile, conf.int = TRUE) |>
   theme_minimal(base_size = 14)
 ```
 
-Lines show coefficient uncertainty. Predictor units differ, so raw slope magnitudes do not rank business importance.
+Remember: confidence intervals quantify our uncertainty about coefficients. 
 
-## Could Household Size Be Telling Two Stories? {.smaller}
+## Check-In
 
-The client asks: **"Would four adults have the same home-goods needs as two adults and two children?"**
+Hopefully by now, you are (relatively) comfortable with the following:
 
-`HouseholdSize` counts everyone. Our first model does not distinguish household composition.
+- identifying variables to include in a regression model
+- fitting a regression model
+- interpreting point estimates and confidence intervals
+
+## Check-In
+
+Hopefully by now, you are (relatively) comfortable with the following:
+
+- identifying variables to include in a regression model
+- fitting a regression model
+- interpreting point estimates and confidence intervals
+
+Let's discuss two problems you might encounter when deciding which variables to include in your model...
+
+## Problem 1: Omitted Variable Bias | A Missing Part of the Story
+
+As we discussed previously, models are *imperfect* - we can't account for everything that is associated with the outcome we care about. We refer to variables that are unaccounted for as **omitted variables**.
+
+An omitted variable can distort the point estimates of our included variables when the omitted variable is **(1) associated with the outcome** and, **(2) related to an included predictor**.
+
+## Household Size vs. Household Composition
+
+**"Would four adults have the same home-goods needs as two adults and two children?"**
+
+```{r echo=FALSE, fig.width=9, fig.height=4.2, out.width='780px'}
+tidy(fit_profile, conf.int = TRUE) |>
+  filter(term != "(Intercept)") |>
+  ggplot(aes(x = term, y = estimate)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = .1) +
+  geom_hline(yintercept = 0, color = "red") +
+  coord_flip() +
+  theme_minimal(base_size = 14)
+```
+
+## Household Size vs. Household Composition
 
 ```{r}
 customer_model_data |>
@@ -199,7 +236,7 @@ customer_model_data |>
   summarise(MeanChildren = mean(ChildrenAtHome), .groups = "drop")
 ```
 
-Larger households tend to have more children. Could our household-size slope be capturing some of the relationship between children and spending?
+Larger households tend to have more children. If the number of children in a home is related to spending, then our estimate for the effect of household size could be biased!
 
 ## Model 2 | Add Household Composition
 
@@ -213,6 +250,12 @@ fit_composition <- linear_reg() |>
 ```
 
 We keep the same rows and other predictors. The new term lets us distinguish household size from the number of children.
+
+## What Does the New Model Say?
+
+```{r}
+tidy(fit_composition, conf.int = TRUE)
+```
 
 ## What Happened to the Household-Size Slope? {.smaller}
 
@@ -228,21 +271,39 @@ bind_rows(
 
 The slope falls from about **$38 to $28** per household member. With composition included, this comparison now also holds the number of children fixed.
 
-What part of the earlier spending story was missing?
+With household size fixed, another child is associated with about **$29** more spending.
 
-With household size fixed, another child is associated with about **$29** more spending: a child replaces an adult in a household of the same size.
+## Recommendations for Handling Omitted Variables
 
-## Omitted Variable Bias | A Missing Part of the Story
+- Ask what a variable's coefficient might be standing in for: are there other variables that could be correlated with one of your independent variables *and* your outcome?
+- Recognize the potential for the omitted variable problem, and do your best to account for it: either by collecting additional variables, or being honest about what the model does/does not tell us. "The model says an additional household member is associated with increased spending, but that effect might depend on whether the household members are adults or children."
 
-An omitted variable can distort an included slope when it **affects the outcome** and **is related to an included predictor**.
+## Omitted Variable Bias: Which Direction? {.smaller}
 
-Here, children are related to household size and have their own relationship with spending. Leaving them out bundles household composition into our household-size estimate.
+Suppose the correct model is:
 
-- Ask what a variable's coefficient might be standing in for.
-- Explain why a missing variable belongs in the business story.
-- Adding controls improves the description, but does not by itself establish a causal effect.
+$$Y = \beta_0 + \beta_1 X + \beta_2 Z + \varepsilon$$
 
-## The Client's Next Question | Website Activity
+If we omit $Z$ and regress $Y$ on $X$, the resulting population coefficient is:
+
+$$\tilde{\beta}_1 = \beta_1 + \underbrace{\beta_2\frac{\operatorname{Cov}(X,Z)}{\operatorname{Var}(X)}}_{\text{omitted-variable bias}}$$
+
+The bias depends on two relationships:
+
+- **$Z$ with $Y$, holding $X$ fixed:** $\beta_2$.
+- **$Z$ with $X$:** $\operatorname{Cov}(X,Z)/\operatorname{Var}(X)$, the slope from regressing $Z$ on $X$.
+
+**Same signs:** positive bias. **Opposite signs:** negative bias.
+
+For household size ($X$) and children ($Z$), both relationships are positive, so omitting children pushes the household-size coefficient **upward**.
+
+## Problem 2: Multicollinearity | Overlapping Information
+
+**Multicollinearity** means explanatory variables contain strongly overlapping information.
+
+If two X variables are **strongly** correlated, the model can struggle to differentiate their effects on the outcome.
+
+## Client Question: Website Activity
 
 **"Could we learn more about customer value from how people use our website? We have both visits and product views."**
 
@@ -250,6 +311,26 @@ Here, children are related to household size and have their own relationship wit
 - `ProductViews30d`: product-page views in those same 30 days.
 
 Do these measure two distinct influences, or largely the same browsing activity? Would both help us explain past spending beyond the household profile?
+
+## Are Visits and Views Separate Information?
+
+```{r echo=FALSE, fig.width=9, fig.height=4.5, out.width='900px'}
+visits_views_correlation <- customer_model_data |>
+  summarise(correlation = cor(SiteVisits30d, ProductViews30d)) |>
+  pull(correlation)
+
+ggplot(customer_model_data, aes(x = SiteVisits30d, y = ProductViews30d)) +
+  geom_point(alpha = .15, size = 1) +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE,
+              color = "#2a6fbb", linewidth = 1) +
+  annotate("label", x = -Inf, y = Inf,
+           label = sprintf("Correlation (r) = %.2f", visits_views_correlation),
+           hjust = -.1, vjust = 1.2, size = 5, fontface = "bold",
+           fill = "white", color = "#333333") +
+  labs(x = "Website visits in the previous 30 days",
+       y = "Product-page views in the same 30 days") +
+  theme_minimal(base_size = 14)
+```
 
 ## Model 3 | Add Website Visits
 
@@ -263,25 +344,23 @@ fit_visits <- linear_reg() |>
       data = customer_model_data)
 ```
 
-We now ask whether visits provide information beyond the household characteristics already included.
+This model allows us to test whether visits provide information beyond the household characteristics already included in the other model.
 
-## Are Visits and Views Separate Information?
+## Model 4 | Add Product Views Instead
 
 ```{r}
-cor(customer_model_data$SiteVisits30d, customer_model_data$ProductViews30d)
+fit_views <- linear_reg() |>
+  set_engine("lm") |>
+  fit(PreviousSpend ~ IncomeThousands + HouseholdSize + Homeowner +
+        HomeSizeHundreds + Age + EducationSomeCollege +
+        EducationBachelors + EducationGraduate + ChildrenAtHome +
+        ProductViews30d,
+      data = customer_model_data)
 ```
 
-```{r echo=FALSE, fig.width=9, fig.height=3.5, out.width='650px'}
-ggplot(customer_model_data, aes(x = SiteVisits30d, y = ProductViews30d)) +
-  geom_point(alpha = .15, size = 1) +
-  labs(x = "Website visits in the previous 30 days",
-       y = "Product-page views in the same 30 days") +
-  theme_minimal(base_size = 14)
-```
+Keep the same household characteristics and customers; replace website visits with product views.
 
-Their correlation is about **0.91**. Customers who visit more usually view more products. What happens if the model must separate these two associations?
-
-## Model 4 | Add Product Views Too
+## Model 5 | Include Both Visits and Views
 
 ```{r}
 fit_browsing <- linear_reg() |>
@@ -293,25 +372,53 @@ fit_browsing <- linear_reg() |>
       data = customer_model_data)
 ```
 
-The visits slope now holds **product views fixed**, as well as the household characteristics. Is there enough distinct information to estimate that association precisely?
+The visits slope now holds **product views fixed**, as well as the household characteristics. But, there may not be enough distinct information to estimate that association precisely.
 
-## Compare the Visits Confidence Interval
+## Compare Browsing Confidence Intervals {.smaller}
 
 ```{r}
 bind_rows(
   visits = tidy(fit_visits, conf.int = TRUE),
+  views = tidy(fit_views, conf.int = TRUE),
   visits_and_views = tidy(fit_browsing, conf.int = TRUE),
   .id = "model"
 ) |>
-  filter(term == "SiteVisits30d") |>
-  select(model, estimate, conf.low, conf.high)
+  filter(term %in% c("SiteVisits30d", "ProductViews30d")) |>
+  select(model, term, estimate, conf.low, conf.high)
 ```
 
-Adding views makes the visits interval **more than twice as wide**. It is harder to separate the two associations than to describe their shared browsing pattern.
+Compare each predictor's 95% interval when it is the **only browsing measure** versus when **both** are included. Both intervals become **more than twice as wide**.
 
-## Multicollinearity | Overlapping Information
+Visits and views use different units; compare interval widths for the **same predictor**.
 
-**Multicollinearity** means explanatory variables contain strongly overlapping information.
+## Identify Overlap with VIF {.smaller}
+
+**Variance inflation factor (VIF)** measures how much overlap with the other predictors inflates a coefficient's variance. A VIF of **1** means no overlap; larger values mean more.
+
+```{r}
+fit_browsing |>
+  extract_fit_engine() |>
+  car::vif() |>
+  enframe(name = "predictor", value = "VIF") |>
+  arrange(desc(VIF)) |>
+  slice_head(n = 5)
+```
+
+**Rule of thumb:** a **VIF above 4** is high enough to investigate multicollinearity. Visits (**6.35**) and views (**5.90**) both exceed this guideline; it is not an automatic removal rule.
+
+`car::vif()` requires the `car` package. Install it once if needed: `install.packages("car")`.
+
+## Choosing Between Collinear Variables {.smaller}
+
+- **Start with the business question.** Keep the measure that best represents the concept you want to explain: visits describe overall website activity; product views describe product browsing.
+- **Prefer reliable, practical measures.** Consider measurement quality, missing values, timing, collection cost and ease of interpretation.
+- **Compare the alternatives on the same customers.** Look at model fit, coefficient estimates and confidence intervals. If fit is similar, prefer the measure with the clearest business rationale.
+- **Protect necessary controls.** Keep both if they represent distinct, important parts of the story; dropping a relevant variable can introduce omitted-variable bias.
+- **Do not choose by the smallest p-value or VIF alone.** Explain the tradeoff and recheck VIF after changing the model.
+
+Here, neither browsing measure adds much to the household model. Keeping **neither** is also reasonable if the business story does not require them.
+
+## Best Practices
 
 - Visits and views give the model fewer distinct comparisons with which to separate their slopes. Estimates can be unstable and intervals wider.
 - This differs from omitted-variable bias: correlation alone does not systematically bias a slope.
@@ -319,20 +426,47 @@ Adding views makes the visits interval **more than twice as wide**. It is harder
 
 Inspect the relationships before interpreting each coefficient as a separate business driver. `cor()` is a useful starting check; combinations of several predictors can also overlap.
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Model Fit | Did the Extra Information Help? {.smaller}
 
 ```{r}
 bind_rows(
   profile = glance(fit_profile), composition = glance(fit_composition),
-  visits = glance(fit_visits), visits_and_views = glance(fit_browsing),
+  visits = glance(fit_visits), views = glance(fit_views),
+  visits_and_views = glance(fit_browsing),
   .id = "model"
 ) |>
   select(model, r.squared)
 ```
 
-Composition improves the description. Browsing adds almost nothing here: the last three models all have $R^2$ about **0.534**.
+Composition improves the description. Browsing adds almost nothing here: the composition model and all three browsing models have $R^2$ about **0.534**.
 
-Adding predictors cannot lower $R^2$ in these nested models on the same rows. More columns do not automatically give more useful insight.
+Adding predictors cannot lower $R^2$ on the same rows. Visits-only and views-only are alternatives; neither adds a predictor to the other. More columns do not automatically give more useful insight.
 
 ## Considerations | Start with a Plausible Story
 
@@ -399,10 +533,10 @@ Use the same customers with observed values for every model variable; report the
 
 Submit a Word report rendered from Quarto with your code, results, and interpretation. Include:
 
-- All four models and their $R^2$ values. Explain what the added information contributes.
+- The four requested models (profile, composition, composition plus visits, and composition plus both browsing measures) and their $R^2$ values. Explain what the added information contributes.
 - A coefficient table with 95% intervals and a slope plot for the model with household composition. Interpret income and graduate education in dollars, holding other included characteristics fixed.
 - The household-size estimates before and after accounting for children. Explain the change and interpret household size and children when both are included.
-- The visits–views correlation and the visits coefficient's 95% interval in the two browsing models. Explain what these results imply for separating the associations.
+- The visits–views correlation, the visits coefficient's 95% interval in the two browsing models, and VIFs for the model with both browsing measures. Assess collinearity and explain what these results imply for separating the associations.
 
 ## Exercise 7 | Customer Profiles {.smaller}
 

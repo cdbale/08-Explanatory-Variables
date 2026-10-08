@@ -2,3 +2,40 @@ slides>slide.title-slide {
     background-image: url("Figures/hex_background.png");
     background-size: 100% 100%;
 }
+
+table.category-indicator-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    margin: 24px 0 0;
+}
+
+table.category-indicator-table th,
+table.category-indicator-table td {
+    padding: 12px 16px;
+    border: 1px solid #c5cdd5;
+    font-size: 20px;
+    line-height: 1.25;
+    text-align: center;
+    vertical-align: middle;
+}
+
+table.category-indicator-table thead th {
+    background: #e7edf3;
+    color: #333;
+    font-weight: 600;
+}
+
+table.category-indicator-table thead {
+    border-bottom: 2px solid #8795a3;
+}
+
+table.category-indicator-table th[rowspan],
+table.category-indicator-table tbody td:first-child {
+    text-align: left;
+    border-right: 2px solid #8795a3;
+}
+
+table.category-indicator-table tbody tr:nth-child(even) {
+    background: #f6f8fa;
+}

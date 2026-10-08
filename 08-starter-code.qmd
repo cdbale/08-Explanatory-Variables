@@ -199,21 +199,39 @@ We now ask whether visits provide information beyond the household characteristi
 
 ## Are Visits and Views Separate Information?
 
-```{r}
-cor(customer_model_data$SiteVisits30d, customer_model_data$ProductViews30d)
-```
+```{r echo=FALSE, fig.width=9, fig.height=4.5, out.width='900px'}
+visits_views_correlation <- customer_model_data |>
+  summarise(correlation = cor(SiteVisits30d, ProductViews30d)) |>
+  pull(correlation)
 
-```{r echo=FALSE, fig.width=9, fig.height=3.5, out.width='650px'}
 ggplot(customer_model_data, aes(x = SiteVisits30d, y = ProductViews30d)) +
   geom_point(alpha = .15, size = 1) +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE,
+              color = "#2a6fbb", linewidth = 1) +
+  annotate("label", x = -Inf, y = Inf,
+           label = sprintf("Correlation (r) = %.2f", visits_views_correlation),
+           hjust = -.1, vjust = 1.2, size = 5, fontface = "bold",
+           fill = "white", color = "#333333") +
   labs(x = "Website visits in the previous 30 days",
        y = "Product-page views in the same 30 days") +
   theme_minimal(base_size = 14)
 ```
 
-Their correlation is about **0.91**. Customers who visit more usually view more products. What happens if the model must separate these two associations?
+## Model 4 | Add Product Views Instead
 
-## Model 4 | Add Product Views Too
+```{r}
+fit_views <- linear_reg() |>
+  set_engine("lm") |>
+  fit(PreviousSpend ~ IncomeThousands + HouseholdSize + Homeowner +
+        HomeSizeHundreds + Age + EducationSomeCollege +
+        EducationBachelors + EducationGraduate + ChildrenAtHome +
+        ProductViews30d,
+      data = customer_model_data)
+```
+
+Keep the same household characteristics and customers; replace website visits with product views.
+
+## Model 5 | Include Both Visits and Views
 
 ```{r}
 fit_browsing <- linear_reg() |>
@@ -227,19 +245,49 @@ fit_browsing <- linear_reg() |>
 
 The visits slope now holds **product views fixed**, as well as the household characteristics. Is there enough distinct information to estimate that association precisely?
 
-## Compare the Visits Confidence Interval
+## Compare Browsing Confidence Intervals {.smaller}
 
 ```{r}
 bind_rows(
   visits = tidy(fit_visits, conf.int = TRUE),
+  views = tidy(fit_views, conf.int = TRUE),
   visits_and_views = tidy(fit_browsing, conf.int = TRUE),
   .id = "model"
 ) |>
-  filter(term == "SiteVisits30d") |>
-  select(model, estimate, conf.low, conf.high)
+  filter(term %in% c("SiteVisits30d", "ProductViews30d")) |>
+  select(model, term, estimate, conf.low, conf.high)
 ```
 
-Adding views makes the visits interval **more than twice as wide**. It is harder to separate the two associations than to describe their shared browsing pattern.
+Compare each predictor's 95% interval when it is the **only browsing measure** versus when **both** are included. Both intervals become **more than twice as wide**.
+
+Visits and views use different units; compare interval widths for the **same predictor**.
+
+## Identify Overlap with VIF {.smaller}
+
+**Variance inflation factor (VIF)** measures how much overlap with the other predictors inflates a coefficient's variance. A VIF of **1** means no overlap; larger values mean more.
+
+```{r}
+fit_browsing |>
+  extract_fit_engine() |>
+  car::vif() |>
+  enframe(name = "predictor", value = "VIF") |>
+  arrange(desc(VIF)) |>
+  slice_head(n = 5)
+```
+
+**Rule of thumb:** a **VIF above 4** is high enough to investigate multicollinearity. Visits (**6.35**) and views (**5.90**) both exceed this guideline; it is not an automatic removal rule.
+
+`car::vif()` requires the `car` package. Install it once if needed: `install.packages("car")`.
+
+## Choosing Between Collinear Variables {.smaller}
+
+- **Start with the business question.** Keep the measure that best represents the concept you want to explain: visits describe overall website activity; product views describe product browsing.
+- **Prefer reliable, practical measures.** Consider measurement quality, missing values, timing, collection cost and ease of interpretation.
+- **Compare the alternatives on the same customers.** Look at model fit, coefficient estimates and confidence intervals. If fit is similar, prefer the measure with the clearest business rationale.
+- **Protect necessary controls.** Keep both if they represent distinct, important parts of the story; dropping a relevant variable can introduce omitted-variable bias.
+- **Do not choose by the smallest p-value or VIF alone.** Explain the tradeoff and recheck VIF after changing the model.
+
+Here, neither browsing measure adds much to the household model. Keeping **neither** is also reasonable if the business story does not require them.
 
 ## Multicollinearity | Overlapping Information
 
@@ -256,15 +304,16 @@ Inspect the relationships before interpreting each coefficient as a separate bus
 ```{r}
 bind_rows(
   profile = glance(fit_profile), composition = glance(fit_composition),
-  visits = glance(fit_visits), visits_and_views = glance(fit_browsing),
+  visits = glance(fit_visits), views = glance(fit_views),
+  visits_and_views = glance(fit_browsing),
   .id = "model"
 ) |>
   select(model, r.squared)
 ```
 
-Composition improves the description. Browsing adds almost nothing here: the last three models all have $R^2$ about **0.534**.
+Composition improves the description. Browsing adds almost nothing here: the composition model and all three browsing models have $R^2$ about **0.534**.
 
-Adding predictors cannot lower $R^2$ in these nested models on the same rows. More columns do not automatically give more useful insight.
+Adding predictors cannot lower $R^2$ on the same rows. Visits-only and views-only are alternatives; neither adds a predictor to the other. More columns do not automatically give more useful insight.
 
 ## Considerations | Start with a Plausible Story
 
@@ -300,10 +349,10 @@ Use the same customers with observed values for every model variable; report the
 
 Submit a Word report rendered from Quarto with your code, results, and interpretation. Include:
 
-- All four models and their $R^2$ values. Explain what the added information contributes.
+- The four requested models (profile, composition, composition plus visits, and composition plus both browsing measures) and their $R^2$ values. Explain what the added information contributes.
 - A coefficient table with 95% intervals and a slope plot for the model with household composition. Interpret income and graduate education in dollars, holding other included characteristics fixed.
 - The household-size estimates before and after accounting for children. Explain the change and interpret household size and children when both are included.
-- The visits–views correlation and the visits coefficient's 95% interval in the two browsing models. Explain what these results imply for separating the associations.
+- The visits–views correlation, the visits coefficient's 95% interval in the two browsing models, and VIFs for the model with both browsing measures. Assess collinearity and explain what these results imply for separating the associations.
 
 ## Exercise 7 | Customer Profiles {.smaller}
 

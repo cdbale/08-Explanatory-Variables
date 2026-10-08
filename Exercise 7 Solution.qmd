@@ -18,10 +18,10 @@ Use the same customers with observed values for every model variable; report the
 
 Submit a Word report rendered from Quarto with your code, results, and interpretation. Include:
 
-- All four models and their $R^2$ values. Explain what the added information contributes.
+- The four requested models (profile, composition, composition plus visits, and composition plus both browsing measures) and their $R^2$ values. Explain what the added information contributes.
 - A coefficient table with 95% intervals and a slope plot for the model with household composition. Interpret income and graduate education in dollars, holding other included characteristics fixed.
 - The household-size estimates before and after accounting for children. Explain the change and interpret household size and children when both are included.
-- The visits–views correlation and the visits coefficient's 95% interval in the two browsing models. Explain what these results imply for separating the associations.
+- The visits–views correlation, the visits coefficient's 95% interval in the two browsing models, and VIFs for the model with both browsing measures. Assess collinearity and explain what these results imply for separating the associations.
 
 ## Exercise 7 | Customer Profiles {.smaller}
 
@@ -46,7 +46,7 @@ Award one point for each row; partial credit is appropriate for a substantially 
 | 1. Models and fit | Four correct models use the same 9,603 customers, correct units and education baseline; all four R-squared values are reported and explained. |
 | 2. Coefficients and uncertainty | Composition-model coefficient table, 95% intervals and slope plot are correct; income and graduate education are interpreted in dollars holding other included characteristics fixed. |
 | 3. Omitted variable | Household-size slopes are compared; the explanation connects children with both household size and spending and correctly interprets size and children when both are included. |
-| 4. Overlapping information | Visits–views correlation and the visits intervals in both browsing models are correct; the report explains why the separate associations are harder to estimate precisely. |
+| 4. Overlapping information | Visits–views correlation, the visits intervals in both browsing models and combined-model VIFs are correct; the report assesses collinearity and explains why the separate associations are harder to estimate precisely. |
 | 5. Client recommendation | Three requested predictions are correct; the Word report gives a justified recommendation, a plausible remaining omitted influence and the distinction between profile predictions and email effects. |
 
 ## Prepare the Customer Data
@@ -198,6 +198,20 @@ bind_rows(
 Visits and views have a correlation of about **0.91**, indicating substantial overlap. With visits alone added to the household model, the visits slope is about **−$0.04**, with a 95% interval of **−$0.71 to $0.62**. With product views also included, it is about **−$0.24**, with an interval of **−$1.71 to $1.23**.
 
 The second interval is more than twice as wide. Customers who visit more generally view more products, making it harder to separate each measure's association with spending. This illustrates multicollinearity. Both intervals include zero, and browsing barely changes fit; we should not claim that one coefficient proves a distinct spending driver. Overlap does not by itself systematically bias a slope, and some correlation is not automatically a reason to remove a relevant variable.
+
+## Assess Collinearity with VIF
+
+```{r}
+fit_browsing |>
+  extract_fit_engine() |>
+  car::vif() |>
+  enframe(name = "predictor", value = "VIF") |>
+  arrange(desc(VIF))
+```
+
+The `car` package must be installed to use `car::vif()`.
+
+Visits have a VIF of about **6.35** and views about **5.90**; every other predictor's VIF is below **2.4**. These two browsing measures stand out for their overlap with other predictors, consistent with the wider confidence interval for visits when views are also included. VIF measures inflation in coefficient variance, not bias or business importance. Use it to investigate whether both measures provide distinct information, rather than automatically dropping a variable.
 
 ## Predict the Requested Customer Profiles
 

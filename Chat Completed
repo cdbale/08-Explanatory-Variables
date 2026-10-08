@@ -80,3 +80,52 @@ Status: Verified.
 Additional direction: Cam requested straightforward undergraduate marketing analytics treatment. The walkthrough uses two coefficient/interval comparisons and no new technical diagnostics or data-generation discussion.
 Verification: Slides, starter and solution use the four approved models on identical 9,603 customers. R execution verified matching model coefficients in all three artifacts, the household-size shift ($38.06 to $27.78), children coefficient ($29.47), visits–views correlation (0.9089), interval widening (more than twice as wide), all four R-squared values and profile predictions ($708.12, $964.93, $1,214.14). Exercise 7 instructions match verbatim across artifacts, and the solution includes an aligned five-point rubric. Two of four eligible prior-material starter steps remain blank (sample preparation/scaling and coefficient table); data inspection and fit comparison remain supplied. Package, Your Turn, live coding and final exercise gaps remain open. Your Turn does not include the completed interpretation. Existing user wording in retained foundations/causal/ethics blocks was compared with the pre-revision snapshot and preserved. Source/diff checks, asset and prior-lecture data comparisons passed. Named local HTML was rendered and all 39 slides visually inspected with zero detected overflow. User deletions of index.html and soup_data.csv were preserved. No commit, push, Canvas write or upload occurred.
 Final skill checklist audit: 1 slides Verified; 2 exercise Verified; 3 starter Verified; 4 practice gaps Verified; 5 Canvas exercise description Needs update (user-deferred); 6 Canvas rubric note Needs update (user-deferred); 7 Canvas starter upload Needs update (user-deferred); 8 GitHub submission Blocked (user-deferred, main and origin/main remain at 2270ff7 with changes uncommitted); 9 published slides/Canvas link Needs update (user-deferred, current local version unpublished). Local artifacts verified; distribution remains explicitly deferred.
+
+11. Slide 9 — Can Our Model Include Categorical Variables? — table labels.
+Change: Label the category column "Category" and group the three indicator columns under "Indicator Variables", retaining their individual names and all cell values.
+Decision: Approve — explicitly requested by Cam on 2026-10-08.
+Status: Verified.
+Verification: Inspected the Rmd table and diff; only the requested table changed in this edit. No render performed. The source diff contains pre-existing trailing whitespace on the Realistic Stories Often Require Multiple Variables slide; preserved Cam's unrelated edits.
+
+12. Slide 9 — Can Our Model Include Categorical Variables? — table spacing and lines.
+Change: Add table-specific styling with full-width layout, a wider category column, equal indicator columns, consistent cell padding, centered indicators, a light cell grid, stronger category/header dividers, shaded headers and alternating row shading.
+Decision: Approve — explicitly requested by Cam on 2026-10-08.
+Status: Verified — source and stylesheet inspected.
+Verification: Reviewed Cam's rendered HTML and embedded styles; the raw table had header padding but no corresponding body-cell padding. Updated only the table source and scoped style.css rules; existing values and labels remain intact. Stylesheet diff check passed. Browser security policy blocked a local-file visual preview, so visual verification remains unavailable. No render or generated HTML edit performed; changes appear on Cam's next render.
+
+13. Slides — Omitted Variable Bias | Which Direction?
+Change: Add one concise slide immediately after Recommendations for Handling Omitted Variables. Present bias = beta_Z times delta, define the two slopes, note adjustment for other included predictors, explain the sign rule and connect it to the household-size/children example.
+Decision: Approve — explicitly requested by Cam on 2026-10-08.
+Status: Verified — source inspected.
+Verification: Confirmed placement and mathematical meaning in the Rmd source. No code changes or starter-code propagation needed. Preserved the surrounding user edits. No render performed.
+
+14. Slides — Omitted Variable Bias | Which Direction? — fuller formula and explanation.
+Change: Replace the abstract product-only formula with the correct two-predictor model and the population coefficient after omitting Z, identifying the covariance/variance bias term. Explain both relationships, their signs, the household-size/children example, the error assumption and adjustment for other predictors. Use the existing smaller-slide convention.
+Decision: Approve — explicitly requested by Cam on 2026-10-08 to match the explanation in chat.
+Status: Verified — source inspected.
+Verification: Inspected the revised equations, definitions and placement immediately after Recommendations for Handling Omitted Variables. Preserved Cam's intervening edits and other lecture content. No code changes, render or generated HTML edits performed.
+
+15. Current slide 31 — Are Visits and Views Separate Information? — tidyverse correlation.
+Change: Replace the direct dollar-sign column extraction with customer_model_data piped into summarise(correlation = cor(SiteVisits30d, ProductViews30d)). Carry the corresponding change into 08-starter-code.qmd.
+Decision: Approve — explicitly requested by Cam on 2026-10-08; corresponding starter-code update authorized by the skill.
+Status: Verified.
+Verification: Inspected matching chunks in the Rmd and starter. Ran the new pipeline in R on the existing complete-case comparison sample; returned a one-row tibble with correlation 0.909, consistent with the slide's approximately 0.91 interpretation. No render performed.
+
+16. Current slide 31 — Are Visits and Views Separate Information? — plot-only display.
+Change: Remove the displayed correlation code/output and explanatory paragraph. Enlarge the scatterplot, add a linear trend line and overlay a clearly labeled Correlation (r) = 0.91 value computed from the comparison sample. Keep computation hidden from the slide and apply matching code changes to the starter.
+Decision: Approve — explicitly requested by Cam on 2026-10-08.
+Status: Verified.
+Verification: Executed the exact revised plotting chunk in R and visually inspected its standalone PNG; the label is legible in the upper-left, the trend line is present and axes remain readable. Correlation is 0.9089261, displayed as 0.91. Inspected matching source and starter chunks. No slides were rendered and generated HTML was preserved.
+
+17. Website-activity walkthrough — three browsing models, confidence intervals and VIF; Exercise 7 collinearity assessment.
+Change: Retain the visits model, add a product-views-only model and renumber the combined model as Model 5. Compare both browsing coefficients and their 95% intervals across all three alternatives. Add Identify Overlap with VIF using car::vif() on the underlying lm model, with interpretation and package setup guidance. Update the five-model fit comparison and learning goals; carry code changes into the starter.
+Decision: Approve — explicitly requested by Cam on 2026-10-08.
+Exercise direction: Cam requested VIF interpretation and collinearity assessment without requiring all three browsing alternatives. Preserve the original four exercise models, name them explicitly, and add combined-model VIFs to the evidence requirement. Update the solution analysis and its existing overlapping-information rubric point; preserve the five-point total.
+Status: Verified.
+Verification: All 19 slide chunks, 20 starter chunks and 15 solution chunks parse and execute on the same 9,603 customers. Starter execution used an in-memory setup fixture for its intentional preparation gap; no student answers were filled in. Corresponding model coefficients and all new model/interval/VIF chunks match across slides and starter. Exercise instructions match verbatim across all three artifacts. Visits-only coefficient/interval: -0.0443 [-0.708, 0.619]; views-only: 0.00158 [-0.203, 0.206]; combined visits: -0.241 [-1.71, 1.23]; combined views: 0.0678 [-0.386, 0.521]. Both intervals widen by about 2.22 times. Combined-model VIFs are 6.35 for visits and 5.90 for views; every other VIF is below 2.4. The composition and all three browsing models have R-squared about 0.534. Checked car's official CRAN documentation for the VIF method. Existing user wording, practice gaps and unrelated edits preserved. No rendering, Canvas edits, Git commit or push performed. Pre-existing source/HTML whitespace remains untouched.
+
+18. Slides — Identify Overlap with VIF / Choosing Between Collinear Variables.
+Change: Add VIF above 4 as a rule of thumb warranting investigation, and note that both browsing measures exceed it. Insert a recommendations slide immediately after VIF covering business relevance, measurement quality and practicality, same-sample comparisons, necessary controls, avoiding selection by p-value or VIF alone and rechecking VIF. Connect the advice to visits/views, including keeping neither when neither adds useful information and the business story does not require them. Mirror the instructional text in the starter workbook.
+Decision: Approve — explicitly requested by Cam on 2026-10-08.
+Status: Verified — source inspected.
+Verification: Inspected the rule, new slide placement, matching workbook text and the existing smaller-slide convention. Penn State STAT 462 guidance supports VIF above 4 as a threshold for investigation: https://online.stat.psu.edu/stat462/node/180/. No code or exercise requirements changed; no rendering performed.
