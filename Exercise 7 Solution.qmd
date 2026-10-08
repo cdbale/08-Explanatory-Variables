@@ -1,0 +1,233 @@
+---
+title: "Exercise 7 Solution"
+author: "Cameron Bale"
+format: docx
+---
+
+## Exercise 7 | Explain Customer Value
+
+The retailer wants a report explaining **household composition** and whether **visits and product views add distinct information** about past spending.
+
+Use `home_goods_customers.csv` and `data_dictionary.pdf`. The outcome is `PreviousSpend`, spending over the previous 12 months. Express income in thousands of dollars and home size in hundreds of square feet; use **high school or less** as the education baseline.
+
+Your household profile includes **income, household size, homeownership, home size, age and education**. Assess what changes when it also accounts for **children at home**. With those household characteristics included, compare an analysis using **visits** with one using **both visits and product views**.
+
+Use the same customers with observed values for every model variable; report the sample size. Choose your code operations and their sequence.
+
+## Exercise 7 | Evidence for the Client
+
+Submit a Word report rendered from Quarto with your code, results, and interpretation. Include:
+
+- All four models and their $R^2$ values. Explain what the added information contributes.
+- A coefficient table with 95% intervals and a slope plot for the model with household composition. Interpret income and graduate education in dollars, holding other included characteristics fixed.
+- The household-size estimates before and after accounting for children. Explain the change and interpret household size and children when both are included.
+- The visits–views correlation and the visits coefficient's 95% interval in the two browsing models. Explain what these results imply for separating the associations.
+
+## Exercise 7 | Customer Profiles {.smaller}
+
+Use the model with **household composition and no browsing variables** to predict spending for these profiles:
+
+| Annual income | People | Owns home | Sq. ft. | Age | Children | Education |
+|---:|---:|---:|---:|---:|---:|---|
+| $40,000 | 1 | 0 | 800 | 30 | 0 | High school or less |
+| $80,000 | 2 | 1 | 1,600 | 45 | 0 | Bachelor's |
+| $120,000 | 4 | 1 | 2,400 | 45 | 2 | Graduate |
+
+Conclude which customer information seems useful for describing historical value. Explain one plausible influence still missing from the models, and why profile predictions do not establish what sending an email would cause.
+
+Upload your Word report to Canvas's **Exercise 7** assignment.
+
+## Grading Rubric | 5 Points
+
+Award one point for each row; partial credit is appropriate for a substantially correct analysis with a small error.
+
+| Point | Full-credit evidence |
+|---|---|
+| 1. Models and fit | Four correct models use the same 9,603 customers, correct units and education baseline; all four R-squared values are reported and explained. |
+| 2. Coefficients and uncertainty | Composition-model coefficient table, 95% intervals and slope plot are correct; income and graduate education are interpreted in dollars holding other included characteristics fixed. |
+| 3. Omitted variable | Household-size slopes are compared; the explanation connects children with both household size and spending and correctly interprets size and children when both are included. |
+| 4. Overlapping information | Visits–views correlation and the visits intervals in both browsing models are correct; the report explains why the separate associations are harder to estimate precisely. |
+| 5. Client recommendation | Three requested predictions are correct; the Word report gives a justified recommendation, a plausible remaining omitted influence and the distinction between profile predictions and email effects. |
+
+## Prepare the Customer Data
+
+This is one implementation of the client report.
+
+```{r}
+library(tidyverse)
+library(tidymodels)
+
+customers <- read_csv("home_goods_customers.csv", show_col_types = FALSE)
+```
+
+```{r}
+customer_model_data <- customers |>
+  drop_na(PreviousSpend, HouseholdIncome, HouseholdSize, Homeowner,
+          HomeSizeSqFt, Age, Education, ChildrenAtHome,
+          SiteVisits30d, ProductViews30d) |>
+  mutate(IncomeThousands = HouseholdIncome / 1000,
+         HomeSizeHundreds = HomeSizeSqFt / 100)
+
+nrow(customer_model_data)
+```
+
+```{r}
+customer_model_data <- customer_model_data |>
+  mutate(
+    EducationSomeCollege = if_else(Education == "Some college/associate", 1, 0),
+    EducationBachelors = if_else(Education == "Bachelor's", 1, 0),
+    EducationGraduate = if_else(Education == "Graduate", 1, 0)
+  )
+```
+
+All four models use **9,603 customers**, so the comparisons reflect added information rather than different samples. Income is measured in $1,000 units and home size in 100-square-foot units. The education baseline is high school or less.
+
+## Fit the Four Spending Models
+
+```{r}
+fit_profile <- linear_reg() |>
+  set_engine("lm") |>
+  fit(PreviousSpend ~ IncomeThousands + HouseholdSize + Homeowner +
+        HomeSizeHundreds + Age + EducationSomeCollege +
+        EducationBachelors + EducationGraduate,
+      data = customer_model_data)
+```
+
+```{r}
+fit_composition <- linear_reg() |>
+  set_engine("lm") |>
+  fit(PreviousSpend ~ IncomeThousands + HouseholdSize + Homeowner +
+        HomeSizeHundreds + Age + EducationSomeCollege +
+        EducationBachelors + EducationGraduate + ChildrenAtHome,
+      data = customer_model_data)
+```
+
+```{r}
+fit_visits <- linear_reg() |>
+  set_engine("lm") |>
+  fit(PreviousSpend ~ IncomeThousands + HouseholdSize + Homeowner +
+        HomeSizeHundreds + Age + EducationSomeCollege +
+        EducationBachelors + EducationGraduate + ChildrenAtHome +
+        SiteVisits30d,
+      data = customer_model_data)
+```
+
+```{r}
+fit_browsing <- linear_reg() |>
+  set_engine("lm") |>
+  fit(PreviousSpend ~ IncomeThousands + HouseholdSize + Homeowner +
+        HomeSizeHundreds + Age + EducationSomeCollege +
+        EducationBachelors + EducationGraduate + ChildrenAtHome +
+        SiteVisits30d + ProductViews30d,
+      data = customer_model_data)
+```
+
+## Compare Model Fit
+
+```{r}
+bind_rows(
+  profile = glance(fit_profile), composition = glance(fit_composition),
+  visits = glance(fit_visits), visits_and_views = glance(fit_browsing),
+  .id = "model"
+) |>
+  select(model, r.squared)
+```
+
+The household profile explains about **52.7%** of spending variation. Adding children increases this to **53.4%**. Adding visits, then product views, leaves it at approximately **53.4%**: these browsing measures add almost no information about historical spending beyond the household characteristics here.
+
+Adding predictors cannot lower R-squared for these nested models on the same customers. Higher fit alone does not establish a causal relationship or better prediction for new customers.
+
+## Interpret the Household Composition Model
+
+```{r}
+composition_estimates <- tidy(fit_composition, conf.int = TRUE)
+composition_estimates
+
+composition_estimates |>
+  filter(term != "(Intercept)") |>
+  ggplot(aes(x = term, y = estimate)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = .1) +
+  geom_hline(yintercept = 0, color = "red") +
+  coord_flip()
+```
+
+Holding the other included characteristics fixed:
+
+- Another **$1,000 of income** is associated with about **$2.05** more spending (95% interval **$1.98–$2.12**).
+- **Graduate education** is associated with about **$56.94** more spending than high school or less (95% interval **$45.39–$68.49**).
+
+The intercept describes a baseline-education nonowner with zero income, household size, home size, age and children. That is outside the observed customer profiles. Predictor units differ, so raw slope magnitudes do not rank business importance. The intervals describe uncertainty about coefficients, not the range of individual spending.
+
+## What Was Missing from the Household-Size Story?
+
+```{r}
+bind_rows(
+  profile = tidy(fit_profile, conf.int = TRUE),
+  composition = tidy(fit_composition, conf.int = TRUE),
+  .id = "model"
+) |>
+  filter(term == "HouseholdSize") |>
+  select(model, estimate, conf.low, conf.high)
+```
+```{r}
+customer_model_data |>
+  group_by(HouseholdSize) |>
+  summarise(MeanChildren = mean(ChildrenAtHome), .groups = "drop")
+```
+
+The household-size slope falls from **$38.06** to **$27.78** after children are included. Larger households tend to have more children, and children have their own relationship with spending. The earlier size slope combined these two parts of the story: this illustrates omitted-variable bias.
+
+With both included, the size slope compares households with the **same number of children**; an extra member is therefore an extra adult. The children slope is about **$29.47**, holding **total household size** fixed; it compares a child with an adult in a household of the same size. Neither slope by itself establishes what a change would cause.
+
+## Do Browsing Measures Tell Us Different Things?
+
+```{r}
+cor(customer_model_data$SiteVisits30d, customer_model_data$ProductViews30d)
+```
+```{r}
+bind_rows(
+  visits = tidy(fit_visits, conf.int = TRUE),
+  visits_and_views = tidy(fit_browsing, conf.int = TRUE),
+  .id = "model"
+) |>
+  filter(term == "SiteVisits30d") |>
+  select(model, estimate, conf.low, conf.high)
+```
+
+Visits and views have a correlation of about **0.91**, indicating substantial overlap. With visits alone added to the household model, the visits slope is about **−$0.04**, with a 95% interval of **−$0.71 to $0.62**. With product views also included, it is about **−$0.24**, with an interval of **−$1.71 to $1.23**.
+
+The second interval is more than twice as wide. Customers who visit more generally view more products, making it harder to separate each measure's association with spending. This illustrates multicollinearity. Both intervals include zero, and browsing barely changes fit; we should not claim that one coefficient proves a distinct spending driver. Overlap does not by itself systematically bias a slope, and some correlation is not automatically a reason to remove a relevant variable.
+
+## Predict the Requested Customer Profiles
+
+```{r}
+profiles <- tibble(
+  Profile = c("Lower-income baseline", "Middle-income homeowner",
+              "Higher-income graduate"),
+  IncomeThousands = c(40, 80, 120),
+  HouseholdSize = c(1, 2, 4),
+  Homeowner = c(0, 1, 1),
+  HomeSizeHundreds = c(8, 16, 24),
+  Age = c(30, 45, 45),
+  ChildrenAtHome = c(0, 0, 2),
+  EducationSomeCollege = c(0, 0, 0),
+  EducationBachelors = c(0, 1, 0),
+  EducationGraduate = c(0, 0, 1)
+)
+
+profile_predictions <- bind_cols(
+  profiles, predict(fit_composition, new_data = profiles)
+)
+profile_predictions
+```
+
+Predicted past spending is **$708.12**, **$964.93**, and **$1,214.14**, respectively. Several characteristics change together, so the differences cannot be attributed to one characteristic alone.
+
+## Recommendation to the Client
+
+Use household characteristics, including children, to describe historical customer value. The third profile has the highest predicted spending and could inform an outreach segment. Collecting both browsing measures adds little to this particular spending explanation; their separate coefficients are also uncertain.
+
+**Customer tenure** is one plausible remaining omitted influence: longer-standing customers may spend more at this retailer, and tenure may be associated with age or homeownership. An acceptable alternative should explain both its relationship with spending and with an included predictor.
+
+Historical value does not establish who will respond to an email. Profile predictions describe spending associations; they do not estimate what sending an email would cause. For that decision, compare subsequent campaign spending for customers randomly assigned to email and control. Be transparent about uncertainty and do not choose variables just to obtain significance.

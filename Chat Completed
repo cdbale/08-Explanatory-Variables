@@ -1,0 +1,82 @@
+LECTURE 08 COMPLETED WORK
+Append verified entries here before removing their active counterparts from Chat To Do.
+
+
+COMPLETED 2026-10-07
+
+1. Slides — Today's Learning Goals; Motivating Example; Realistic Stories Often Require Multiple Variables; Connect the Story to the Indicator Variables; Recover Parameters; Omitted Variable Bias; Multicollinearity; final Exercise.
+Issue/evidence: Current slides use Kroger/soup, product promotion simulations and Exercise 9; Lectures 06–07 now use home_goods_customers.csv and historical PreviousSpend. A Key Concepts slide exists instead of the required learning-goals title.
+Change: Teach the same concepts using home-goods customer profiles, with an explicitly hypothetical outcome for known-parameter simulations, observed historical spending for the client exercise, and a distinction between historical associations and the randomized email intervention. Add concise learning goals immediately after the title.
+Effect: Corresponding starter code, local data/dictionary dependencies and exercise instructions must agree.
+Decision: Approve — explicitly requested and standing slide requirements.
+Status: Verified.
+Verified: Source now has 38 slides (44 before). Goals are slide 2. Customer import/preparation and indicators are slides 8–11; explicitly hypothetical known-spending simulation is slides 12–16; interpretations/plot are slides 17–19; omitted-variable demonstration is slides 20–21; multicollinearity is slides 22–27; comparison/story/live coding are slides 28–30; ethics retained in slides 31–34; Exercise 7 concludes slides 36–38. All 16 R chunks parse and execute in the source audit (including code-only examples). Local CSV and both dictionary formats are byte-identical to Lecture 06; CSV also matches Lecture 07. Current HTML render and screenshots inspected after explicit local render authorization.
+
+2. Slides — Marketing Analytics Process / Inferential Modeling Workflow / Review the Workflow; three Motivating Example slides; repeated parameter tables/plots and What's Going On?; integrity block.
+Issue/evidence: Repeated workflow reminders, identical case paragraphs, and separate output/code displays repeat the same explanation. Ethical cases share one decision pattern.
+Change: Consolidate workflow and case repetition; retain parameter recovery, estimates/interval plots, omitted-variable discussion, correlation diagnostics, model comparison, all ethics examples and their integrity lesson. Combine overlapping ethical case framing without changing concepts.
+Effect: Fewer transitions; all learning goals and exercise preparation retained.
+Decision: Approve — condensation explicitly requested, preserving concepts.
+Status: Verified.
+Verified: Removed duplicate workflow and repeated Kroger paragraphs; consolidated parameter displays into purposeful recovery/interpretation and code/result views; combined ethical cases while retaining both cases, the cuttlefish/Barbara Lewis integrity material, and the analyst integrity lesson. All concepts are retained, including simulation and parameter recovery, continuous/indicator partial slopes, hyperplane least squares, omitted-variable bias, coefficient plots, multicollinearity/correlation, fit comparison, causal intervention distinction, profile prediction and managerial interpretation. 44 source slides became 38; all 38 screenshots visually inspected and browser bounds show zero overflow.
+
+3. Numbering — final exercise slides, starter title/references and Exercise 9 Solution.qmd title/filename.
+Issue/evidence: Lectures 06/07 conclude with Exercises 5/6. Syllabus schedules Lecture 08 October 20 and Exercise 7 due October 22. Canvas Fall 2026 course 38688 includes sections 001/002; Exercise 7 assignment 1452131 is due October 22, Grade Exercise 7 is 1452149. Module placement reflects due-day activities: Exercise 6 appears under Explanatory Variables and Exercise 7 under Overfitting and Prediction.
+Change: Conclude Lecture 08 with Exercise 7 and use that number in local solution/student instructions. Preserve Canvas ordering and due dates.
+Effect: Number and assignment destination align across local artifacts.
+Decision: Approve — explicitly requested, verified against syllabus and Canvas.
+Status: Verified.
+Verified: Exercise 7 is used in all final local instructions, starter and renamed Exercise 7 Solution.qmd. Syllabus and fresh Canvas API audit confirm Lecture 08 is taught October 20 and Exercise 7 is due October 22, 2026 at 3:30 p.m. Mountain Time (1452131); grading assignment is 1452149. No Canvas numbering/settings were edited. Legacy slide/starter filenames remain intact to preserve their established paths; starter title identifies Lecture 08.
+
+4. Exercise solution — separate solution instructions, analysis and five-point rubric.
+Issue/evidence: Existing solution analyzes Campbell's soup promotional budget and contains five one-point grading items. These inputs do not exist in the new customer data.
+Change: Match the final slide exercise verbatim; supply an example historical-spending analysis and corresponding five-point rubric, with model comparison, coefficient interpretation/plot, omitted-variable reasoning and three customer-profile predictions. Preserve a semi-open-ended student task.
+Effect: Depends on final slide instructions; no Canvas distribution authorized.
+Decision: Approve — Cam approved via review question on 2026-10-07.
+Status: Verified.
+Verified: Separate solution rewritten for observed PreviousSpend; instructions match the final three exercise slides verbatim in solution and starter. Five one-point rubric categories cover models/sample, fit comparison, estimates/intervals/plot, omitted influence and predictions/client report. All six solution chunks parse/execute. Shared sample is 9,603; R-squared is .502 for base and .518 for expanded; predictions are 730.48, 980.39 and 1193.70 dollars. Income, home-size and graduate-education estimates/intervals checked numerically. No solution document render or Canvas posting was requested.
+
+5. Starter — corresponding slide code and prior-material practice gaps.
+Issue/evidence: Current starter uses the superseded product simulation. Lectures 06–07 teach import, missing-row preparation/scaling, linear_reg/set_engine/fit, tidy/confidence intervals, ggplot and glance comparisons. Lecture 08 newly teaches multicategory indicators, coefficient plots, omitted-variable comparisons and correlation diagnostics.
+Change: Carry through slide code/data/names; preserve open activity gaps. Remove approximately half of eligible complete prior-material steps as whole blocks, retaining setup and current-lecture concepts. Record final selections and run setup/syntax checks.
+Effect: Starter must still support all final slide activities and Exercise 7 without supplied exercise answers.
+Decision: Approve — corresponding slide updates authorized initially; practice gaps approved by Cam on 2026-10-07.
+Status: Verified.
+Verified: Matching customer names, units, indicators, simulation, model formulas, coefficient plots, correlation checks and model comparison now replace the old product simulation. Four eligible prior-material steps were identified: complete-case preparation/scaling, data inspection, the complete-model estimate/interval table and R-squared comparison. Removed preparation/scaling and the parameter table (2/4 = 50%); retained data inspection and R-squared comparison. These are whole blocks. Multicategory coding, simulation/current-lecture demonstrations and plot code remain supplied. Existing package-load and Your Turn gaps remain open; live coding and separate exercise also have neutral empty chunks. All 18 starter chunks parse; six are intentional empty chunks. Supplied code executes with temporary in-memory fixtures only for the missing setup/practice steps; no student answers were inserted into the gaps.
+
+8. Local render — authorized by Cam on 2026-10-07 via Render locally only.
+Decision: Approve — explicitly requested local rendering, updating both HTML files and inspection; GitHub and Canvas remain deferred.
+Status: Verified.
+Evidence: Rendered with rmarkdown/R 4.6.1 and the existing ioslides/style.css conventions. 10-Explanatory-Variables.html and index.html are byte-identical, SHA-256 3CC7A540AD980DF0280BACA543E1102097804D2EA74B6B9C1B2BEB25293396E4. All 38 screenshots visually inspected after resolving crowded code/output slides; browser layout audit detected no overflow. Generated output whitespace normalized; git diff --check passed. No source or student workbook was rendered into Word.
+
+FINAL NINE-ITEM SKILL AUDIT — 2026-10-07
+1. Slides: Verified — authoritative Rmd and both local HTML files updated; 38-slide visual/layout audit passed.
+2. Exercise: Verified — final slides, starter and solution have verbatim matching semi-open-ended Exercise 7 instructions; solutions, predictions and five-point rubric checked.
+3. Starter: Verified — matching supplied code/data/setup assumptions; syntax and execution around intentional gaps checked.
+4. Prior-material reduction: Verified — two of four eligible whole steps removed; existing Your Turn content remains separate.
+5. Canvas exercise instructions: Needs update — explicitly deferred by Cam; fresh GET confirms Exercise 7 (1452131) description is empty.
+6. Canvas grading rubric note: Needs update — explicitly deferred; fresh GET confirms Grade Exercise 7 (1452149) lacks the note.
+7. Canvas starter upload: Needs update — explicitly deferred; module item 3180667 still points to existing 10-starter-code.qmd, file 13545283. Revised solution distribution is deferred with it; common data/dictionary already appear in the Inference module.
+8. GitHub submission: Blocked — Cam authorized local rendering only. Main and its local origin/main tracking ref are 2270ff753c0a294721ce475b5d5e7669cd3ce0cc; all intended changes remain uncommitted and unpushed. No remote submission performed.
+9. Canvas slide link / Pages: Needs update — explicitly deferred. Fresh GET of module item 3180665 confirms https://cdbale.github.io/08-Explanatory-Variables/. Read-only live HTTP fetch returned 200 and old Kroger/Exercise 9 content without home-goods data. The inspected local render has not been deployed.
+Authorized local work is complete. Full distributed lecture synchronization remains pending only for Cam's deferred Canvas/publication items. No approved local task remains active in Chat To Do.
+
+
+9. Lecture 08 filenames — slide source, named HTML and student starter.
+Issue/evidence: Local files still use the former lecture number 10; README still names lecture 11.
+Change: Rename the source to 08 Explanatory Variables.Rmd, the rendered slides to 08-Explanatory-Variables.html, and the starter to 08-starter-code.qmd. Update current local references and the README heading. Keep Exercise 7 numbering and index.html.
+Effect: Deferred Canvas uploads should use the new local starter filename; existing Canvas files remain unchanged.
+Decision: Approve — Cam explicitly requested repository filenames use lecture 8.
+Status: Verified.
+Verification: All three new files exist and all three old local filenames are absent. The renamed HTML is byte-identical to index.html and retains its previously inspected 38-slide render. Local audit and git diff --check passed. Current QA/build references and README heading use 08. Historical Chat Completed evidence and descriptions of existing Canvas attachment names were preserved. No rerender, commit, push or Canvas edit performed.
+
+
+10. Client-led revision — slide 4 Motivating Example | A Better Customer Story; slides 12–16 simulation/recovery; slides 20–28 omitted-variable and redundancy sequence; Wrapping Up; Exercise 7; matching starter and solution.
+Issue/evidence: The current source demonstrates the two issues with SimulatedSpend and an artificial IncomeProxyThousands, emphasizing known-parameter recovery. Cam wants an introductory client investigation using actual recorded variables instead.
+Change: Start with describing higher-spending households and testing whether website activity adds useful information for outreach. Model 1 uses income, household size, homeownership, home size, age and education; Model 2 adds ChildrenAtHome; Model 3 adds SiteVisits30d; Model 4 adds ProductViews30d. Use a fixed 9,603-customer sample. Remove simulation/recovery and artificial predictors as expressly requested; retain multiple regression, least squares/hyperplane intuition, statistical error, partial slopes/intercept, categorical baselines, intervals/plots, omitted-variable reasoning, multicollinearity, fit comparison, prediction and causal/ethical interpretation. Treat the retailer records as the classroom case without data-generation explanations. Preserve Cam's recent wording edits in the retained causal-inference block and existing deletions of index.html/soup_data.csv until any authorized generated-output update.
+Effect: Update starter code and its two prior-material practice gaps; align concluding semi-open-ended Exercise 7, solution analysis and five-point rubric. Verify actual coefficients, uncertainty, fits and profiles. Local slide rendering/inspection was previously authorized; GitHub and Canvas remain explicitly deferred.
+Decision: Approve — Cam approved the proposed four-model plan and requested implementation on 2026-10-07.
+Status: Verified.
+Additional direction: Cam requested straightforward undergraduate marketing analytics treatment. The walkthrough uses two coefficient/interval comparisons and no new technical diagnostics or data-generation discussion.
+Verification: Slides, starter and solution use the four approved models on identical 9,603 customers. R execution verified matching model coefficients in all three artifacts, the household-size shift ($38.06 to $27.78), children coefficient ($29.47), visits–views correlation (0.9089), interval widening (more than twice as wide), all four R-squared values and profile predictions ($708.12, $964.93, $1,214.14). Exercise 7 instructions match verbatim across artifacts, and the solution includes an aligned five-point rubric. Two of four eligible prior-material starter steps remain blank (sample preparation/scaling and coefficient table); data inspection and fit comparison remain supplied. Package, Your Turn, live coding and final exercise gaps remain open. Your Turn does not include the completed interpretation. Existing user wording in retained foundations/causal/ethics blocks was compared with the pre-revision snapshot and preserved. Source/diff checks, asset and prior-lecture data comparisons passed. Named local HTML was rendered and all 39 slides visually inspected with zero detected overflow. User deletions of index.html and soup_data.csv were preserved. No commit, push, Canvas write or upload occurred.
+Final skill checklist audit: 1 slides Verified; 2 exercise Verified; 3 starter Verified; 4 practice gaps Verified; 5 Canvas exercise description Needs update (user-deferred); 6 Canvas rubric note Needs update (user-deferred); 7 Canvas starter upload Needs update (user-deferred); 8 GitHub submission Blocked (user-deferred, main and origin/main remain at 2270ff7 with changes uncommitted); 9 published slides/Canvas link Needs update (user-deferred, current local version unpublished). Local artifacts verified; distribution remains explicitly deferred.

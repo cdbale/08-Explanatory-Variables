@@ -1,0 +1,419 @@
+---
+title: "Explanatory Variables"
+subtitle: "MCB Consulting Group (MKTG 411)"
+output:
+  ioslides_presentation:
+    widescreen: true
+    css: style.css
+---
+
+## Today's Learning Goals
+
+- Fit and interpret multiple explanatory variables and categorical baselines.
+- Be able to explain omitted-variable bias and multicollinearity.
+- Compare estimates, uncertainty, and model fit without hunting for significance.
+- Distinguish customer-profile predictions from managerial intervention effects.
+
+## Where Are We in the Workflow?
+
+Lectures 06–07 **built, fit, evaluated, and predicted** historical spending. Today we revisit **consider** and **build**: does our model tell a plausible story?
+
+<center>
+![](Figures/workflow-inference_build.png){width=800px}
+</center>
+
+## Client Brief | Understand Customer Value
+
+The home-goods retailer wants to understand **which household characteristics distinguish higher-spending customers**, and whether **website activity adds useful information** for planning outreach.
+
+- Which characteristics belong in a plausible spending story?
+- Does a larger household mean the same thing regardless of who lives there?
+- Do more visits and more product views tell us different things?
+
+Our outcome is `PreviousSpend`: spending at this retailer over the previous 12 months.
+
+## Statistical and Causal Inference
+
+- **Statistical inference:** learn about associations between variables.
+- **Causal inference:** learn what changing one variable would cause.
+
+<center>
+![](Figures/ice-cream-shark-attacks.png){width=420px}
+</center>
+
+An association can reflect a shared cause. Fitting a regression model does not tell us *why* variables are associated. A plausible story can help identify the *why*.
+
+## Consider | What Could the Retailer Change?
+
+`PreviousSpend` is historical spending, measured **before** the email campaign. `Treatment` records randomized email assignment; `CampaignSpend` is spending in the **following 30 days**.
+
+- Household-profile models describe historical associations. A prediction at a different income is not evidence that raising income would cause that spending difference.
+- For the email decision, compare subsequent outcomes for randomly assigned email and control customers. Randomization helps separate the email from pre-existing customer differences.
+- Adding controls alone does not establish causality. Neither the later email nor its outcomes can explain earlier spending.
+
+## Realistic Stories Often Require Multiple Variables
+
+$$y = \beta_0 + \beta_1 x_1 + \cdots + \beta_p x_p + \epsilon, \qquad \epsilon \sim Normal(0, \sigma^2)$$
+
+- $y$: outcome; $x_1,\ldots,x_p$: explanatory variables.
+- $\beta_0$: intercept; $\beta_1,\ldots,\beta_p$: slopes.
+- $\epsilon$: influences on the outcome left outside our story.
+
+Relevant variables can make the story more realistic. More variables are not automatically better.
+
+## Getting Started | The Same Customer Records
+
+```{r message=FALSE}
+library(tidyverse)
+library(tidymodels)
+
+customers <- read_csv("home_goods_customers.csv", show_col_types = FALSE)
+```
+
+Use the data dictionary to check units and timing. The observed outcome remains `PreviousSpend`, dollars spent at this retailer over the previous 12 months.
+
+## Keep the Model Comparisons Comparable
+
+Use the same customers for every model, so changes reflect the spending story rather than different samples.
+
+```{r}
+customer_model_data <- customers |>
+  drop_na(PreviousSpend, HouseholdIncome, HouseholdSize, Homeowner,
+          HomeSizeSqFt, Age, Education, ChildrenAtHome,
+          SiteVisits30d, ProductViews30d) |>
+  mutate(IncomeThousands = HouseholdIncome / 1000,
+         HomeSizeHundreds = HomeSizeSqFt / 100)
+
+nrow(customer_model_data)
+```
+
+There are **9,603 customers**. One unit is $1,000 of annual income or 100 square feet of home size, respectively.
+
+## Connect the Story to the Indicator Variables
+
+Lecture 07 used a binary `Homeowner` predictor. For a category with more than two levels, use one fewer indicator than levels and choose a **baseline**.
+
+| Education | Some college | Bachelor's | Graduate |
+|---|---:|---:|---:|
+| High school or less (baseline) | 0 | 0 | 0 |
+| Some college/associate | 1 | 0 | 0 |
+| Bachelor's | 0 | 1 | 0 |
+| Graduate | 0 | 0 | 1 |
+
+Each indicator slope compares that group with the baseline, holding other included predictors fixed. A single numeric code would impose equally spaced contributions.
+
+## Create the Education Indicators
+
+```{r}
+customer_model_data <- customer_model_data |>
+  mutate(
+    EducationSomeCollege = if_else(Education == "Some college/associate", 1, 0),
+    EducationBachelors = if_else(Education == "Bachelor's", 1, 0),
+    EducationGraduate = if_else(Education == "Graduate", 1, 0)
+  )
+```
+
+An intercept plus an indicator for **every** category would be redundant: those indicators sum to one. Leaving out the baseline indicator avoids exact dependence.
+
+## Model 1 | A Broader Household Profile
+
+Build on the income, household-size and homeownership models from Lectures 06–07. Add **home size, age and education** to describe differences in household needs and resources.
+
+```{r}
+fit_profile <- linear_reg() |>
+  set_engine("lm") |>
+  fit(PreviousSpend ~ IncomeThousands + HouseholdSize + Homeowner +
+        HomeSizeHundreds + Age + EducationSomeCollege +
+        EducationBachelors + EducationGraduate,
+      data = customer_model_data)
+```
+
+These are associations with historical spending. We interpret each slope while holding the other included characteristics fixed.
+
+## Finding the Best *Hyperplane*
+
+Least squares still minimizes the **sum of squared residuals**. One predictor gives a line, two give a plane, and more give a hyperplane.
+
+<center>
+![](Figures/hyperplane.png){width=750px}
+</center>
+
+## Estimate the Household Relationships
+
+```{r}
+tidy(fit_profile, conf.int = TRUE)
+```
+
+## Interpret the Parameters | Holding Others Fixed
+
+- **Intercept:** expected spending when numeric predictors are zero and education is at the baseline. Check whether that profile is meaningful and represented in the data.
+- **Continuous slope:** expected dollar difference per unit, **holding other included predictors fixed**.
+- **Indicator slope:** expected dollar difference from its baseline, **holding other included predictors fixed**.
+
+## Interpret Model 1 | Three Examples
+
+Holding the other included characteristics fixed:
+
+- **Income:** another $1,000 of annual income is associated with about **$2.05** more past spending.
+- **Household size:** another household member is associated with about **$38.06** more past spending.
+- **Graduate education:** about **$58.12** more past spending than the **high school or less** baseline.
+
+The intercept describes a profile with zero income, household size, home size and age. That profile is outside the observed ranges.
+
+## Plot Estimates and Confidence Intervals | Code
+
+```{r eval=FALSE}
+tidy(fit_profile, conf.int = TRUE) |>
+  filter(term != "(Intercept)") |>
+  ggplot(aes(x = term, y = estimate)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = .1) +
+  geom_hline(yintercept = 0, color = "red") +
+  coord_flip()
+```
+
+## Plot Estimates and Confidence Intervals | Result
+
+```{r echo=FALSE, fig.width=9, fig.height=4.2, out.width='780px'}
+tidy(fit_profile, conf.int = TRUE) |>
+  filter(term != "(Intercept)") |>
+  ggplot(aes(x = term, y = estimate)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = .1) +
+  geom_hline(yintercept = 0, color = "red") +
+  coord_flip() +
+  theme_minimal(base_size = 14)
+```
+
+Lines show coefficient uncertainty. Predictor units differ, so raw slope magnitudes do not rank business importance.
+
+## Could Household Size Be Telling Two Stories? {.smaller}
+
+The client asks: **"Would four adults have the same home-goods needs as two adults and two children?"**
+
+`HouseholdSize` counts everyone. Our first model does not distinguish household composition.
+
+```{r}
+customer_model_data |>
+  group_by(HouseholdSize) |>
+  summarise(MeanChildren = mean(ChildrenAtHome), .groups = "drop")
+```
+
+Larger households tend to have more children. Could our household-size slope be capturing some of the relationship between children and spending?
+
+## Model 2 | Add Household Composition
+
+```{r}
+fit_composition <- linear_reg() |>
+  set_engine("lm") |>
+  fit(PreviousSpend ~ IncomeThousands + HouseholdSize + Homeowner +
+        HomeSizeHundreds + Age + EducationSomeCollege +
+        EducationBachelors + EducationGraduate + ChildrenAtHome,
+      data = customer_model_data)
+```
+
+We keep the same rows and other predictors. The new term lets us distinguish household size from the number of children.
+
+## What Happened to the Household-Size Slope? {.smaller}
+
+```{r}
+bind_rows(
+  profile = tidy(fit_profile, conf.int = TRUE),
+  composition = tidy(fit_composition, conf.int = TRUE),
+  .id = "model"
+) |>
+  filter(term == "HouseholdSize") |>
+  select(model, estimate, conf.low, conf.high)
+```
+
+The slope falls from about **$38 to $28** per household member. With composition included, this comparison now also holds the number of children fixed.
+
+What part of the earlier spending story was missing?
+
+With household size fixed, another child is associated with about **$29** more spending: a child replaces an adult in a household of the same size.
+
+## Omitted Variable Bias | A Missing Part of the Story
+
+An omitted variable can distort an included slope when it **affects the outcome** and **is related to an included predictor**.
+
+Here, children are related to household size and have their own relationship with spending. Leaving them out bundles household composition into our household-size estimate.
+
+- Ask what a variable's coefficient might be standing in for.
+- Explain why a missing variable belongs in the business story.
+- Adding controls improves the description, but does not by itself establish a causal effect.
+
+## The Client's Next Question | Website Activity
+
+**"Could we learn more about customer value from how people use our website? We have both visits and product views."**
+
+- `SiteVisits30d`: website sessions in the previous 30 days.
+- `ProductViews30d`: product-page views in those same 30 days.
+
+Do these measure two distinct influences, or largely the same browsing activity? Would both help us explain past spending beyond the household profile?
+
+## Model 3 | Add Website Visits
+
+```{r}
+fit_visits <- linear_reg() |>
+  set_engine("lm") |>
+  fit(PreviousSpend ~ IncomeThousands + HouseholdSize + Homeowner +
+        HomeSizeHundreds + Age + EducationSomeCollege +
+        EducationBachelors + EducationGraduate + ChildrenAtHome +
+        SiteVisits30d,
+      data = customer_model_data)
+```
+
+We now ask whether visits provide information beyond the household characteristics already included.
+
+## Are Visits and Views Separate Information?
+
+```{r}
+cor(customer_model_data$SiteVisits30d, customer_model_data$ProductViews30d)
+```
+
+```{r echo=FALSE, fig.width=9, fig.height=3.5, out.width='650px'}
+ggplot(customer_model_data, aes(x = SiteVisits30d, y = ProductViews30d)) +
+  geom_point(alpha = .15, size = 1) +
+  labs(x = "Website visits in the previous 30 days",
+       y = "Product-page views in the same 30 days") +
+  theme_minimal(base_size = 14)
+```
+
+Their correlation is about **0.91**. Customers who visit more usually view more products. What happens if the model must separate these two associations?
+
+## Model 4 | Add Product Views Too
+
+```{r}
+fit_browsing <- linear_reg() |>
+  set_engine("lm") |>
+  fit(PreviousSpend ~ IncomeThousands + HouseholdSize + Homeowner +
+        HomeSizeHundreds + Age + EducationSomeCollege +
+        EducationBachelors + EducationGraduate + ChildrenAtHome +
+        SiteVisits30d + ProductViews30d,
+      data = customer_model_data)
+```
+
+The visits slope now holds **product views fixed**, as well as the household characteristics. Is there enough distinct information to estimate that association precisely?
+
+## Compare the Visits Confidence Interval
+
+```{r}
+bind_rows(
+  visits = tidy(fit_visits, conf.int = TRUE),
+  visits_and_views = tidy(fit_browsing, conf.int = TRUE),
+  .id = "model"
+) |>
+  filter(term == "SiteVisits30d") |>
+  select(model, estimate, conf.low, conf.high)
+```
+
+Adding views makes the visits interval **more than twice as wide**. It is harder to separate the two associations than to describe their shared browsing pattern.
+
+## Multicollinearity | Overlapping Information
+
+**Multicollinearity** means explanatory variables contain strongly overlapping information.
+
+- Visits and views give the model fewer distinct comparisons with which to separate their slopes. Estimates can be unstable and intervals wider.
+- This differs from omitted-variable bias: correlation alone does not systematically bias a slope.
+- Exact dependence can make separate slopes impossible to estimate; moderate correlation is not automatically a reason to remove a variable.
+
+Inspect the relationships before interpreting each coefficient as a separate business driver. `cor()` is a useful starting check; combinations of several predictors can also overlap.
+
+## Model Fit | Did the Extra Information Help? {.smaller}
+
+```{r}
+bind_rows(
+  profile = glance(fit_profile), composition = glance(fit_composition),
+  visits = glance(fit_visits), visits_and_views = glance(fit_browsing),
+  .id = "model"
+) |>
+  select(model, r.squared)
+```
+
+Composition improves the description. Browsing adds almost nothing here: the last three models all have $R^2$ about **0.534**.
+
+Adding predictors cannot lower $R^2$ in these nested models on the same rows. More columns do not automatically give more useful insight.
+
+## Considerations | Start with a Plausible Story
+
+- Check units, timing, and relationships. A variable that is a function of another may be redundant.
+- Consider omitted influences that affect both the outcome and included predictors.
+- Use uncertainty and model comparisons together; significance alone is not a reason to include or exclude a variable.
+- Before recommending an intervention, explain why the design addresses alternative stories.
+
+## Live Coding | A Useful Outreach Segment
+
+Leadership wants a practical description of **high-value households** and a recommendation about which customer information to collect next.
+
+What should "high-value" mean? What evidence would make a segment useful? What might still be missing from our spending story, and how would we explain uncertainty to the client?
+
+Develop an analysis and a recommendation, including the limits of what it tells us about an outreach campaign.
+
+## Don't be a Cuttlefish!
+
+<center>
+![](Figures/cuttlefish.jpg){width=720px}
+</center>
+
+## Have Integrity
+
+"People can behave like cuttlefish, changing their clothing, language, behavior, and thoughts, depending on their surroundings. They might do this in order to impress or be accepted by others. However, this behavior does people more harm than good. In their eagerness to blend in, they can sacrifice their integrity."
+
+[Barbara A. Lewis](https://www.churchofjesuschrist.org/study/ensign/2018/04/integrity?lang=eng)
+
+## Pressure, Decisions, and Consequences
+
+| Case | Pressure and decision | Consequence |
+|---|---|---|
+| Wells Fargo cross-selling fraud | Meet sales goals; employees opened millions of unauthorized accounts. | [Wells Fargo agrees to pay $3 billion in settlement](https://www.justice.gov/archives/opa/pr/wells-fargo-agrees-pay-3-billion-resolve-criminal-and-civil-investigations-sales-practices). |
+| Purdue Pharma opioid scandal | Sell prescription drugs; aggressive marketing downplayed addictive risks and encouraged over-prescription. | [Criminal guilty pleas, $8 billion settlement, dissolution and repurposing for public benefit](https://www.justice.gov/archives/opa/pr/justice-department-announces-global-resolution-criminal-and-civil-investigations-opioid). |
+
+What pressures could tempt an analyst to tell the story management wants to hear?
+
+## What Should I Do?
+
+- Be transparent about analytical decisions and motivations. Don't hunt for statistical significance.
+- Be honest about uncertainty and possible omitted influences.
+- Conduct analyses **in pursuit of truth**, not in pursuit of a specific result.
+
+## Wrapping Up | What We Learned for the Client
+
+- Interpret each slope holding other included predictors fixed, with explicit categorical baselines.
+- Household size and household composition tell different parts of the spending story. Leaving out a relevant characteristic can distort another slope.
+- Visits and product views overlap; separating their slopes increases uncertainty without meaningfully improving fit here.
+- Coefficients, intervals and $R^2$ support a business explanation. They do not establish what an intervention would cause.
+
+*Next Time*: Overfitting and prediction.
+
+## Exercise 7 | Explain Customer Value
+
+The retailer wants a report explaining **household composition** and whether **visits and product views add distinct information** about past spending.
+
+Use `home_goods_customers.csv` and `data_dictionary.pdf`. The outcome is `PreviousSpend`, spending over the previous 12 months. Express income in thousands of dollars and home size in hundreds of square feet; use **high school or less** as the education baseline.
+
+Your household profile includes **income, household size, homeownership, home size, age and education**. Assess what changes when it also accounts for **children at home**. With those household characteristics included, compare an analysis using **visits** with one using **both visits and product views**.
+
+Use the same customers with observed values for every model variable; report the sample size. Choose your code operations and their sequence.
+
+## Exercise 7 | Evidence for the Client
+
+Submit a Word report rendered from Quarto with your code, results, and interpretation. Include:
+
+- All four models and their $R^2$ values. Explain what the added information contributes.
+- A coefficient table with 95% intervals and a slope plot for the model with household composition. Interpret income and graduate education in dollars, holding other included characteristics fixed.
+- The household-size estimates before and after accounting for children. Explain the change and interpret household size and children when both are included.
+- The visits–views correlation and the visits coefficient's 95% interval in the two browsing models. Explain what these results imply for separating the associations.
+
+## Exercise 7 | Customer Profiles {.smaller}
+
+Use the model with **household composition and no browsing variables** to predict spending for these profiles:
+
+| Annual income | People | Owns home | Sq. ft. | Age | Children | Education |
+|---:|---:|---:|---:|---:|---:|---|
+| $40,000 | 1 | 0 | 800 | 30 | 0 | High school or less |
+| $80,000 | 2 | 1 | 1,600 | 45 | 0 | Bachelor's |
+| $120,000 | 4 | 1 | 2,400 | 45 | 2 | Graduate |
+
+Conclude which customer information seems useful for describing historical value. Explain one plausible influence still missing from the models, and why profile predictions do not establish what sending an email would cause.
+
+Upload your Word report to Canvas's **Exercise 7** assignment.
