@@ -3,21 +3,7 @@ Repository boundary verified: 08-Explanatory-Variables has its own .git and auth
 
 AUTHORIZED LOCAL WORK — VERIFIED ENTRIES MOVED TO CHAT COMPLETED
 
-AUTHORIZED PUBLICATION — IN PROGRESS
-
-6. Canvas — Exercise 7 (1452131), Grade Exercise 7 (1452149), revised starter/solution files.
-Issue/evidence: Exercise 7 description is empty; Grade Exercise 7 lacks a rubric-in-solution note. Existing Lecture 08 starter attachment is 10-starter-code.qmd (module item 3180667, file 13545283), confirmed by the final API readback. Common CSV/PDF are already in the Inference module.
-Change proposed: Post finalized instructions, add the rubric note and replace/upload the finalized 08-starter-code.qmd and Exercise 7 Solution.qmd after authorization, preserving other settings and avoiding duplicate old/new attachments.
-Effect: Depends on finalized local exercise/solution/starter.
-Decision: Approve — Cam explicitly requested Canvas publication and scheduled solution release on 2026-10-09, superseding the earlier deferral.
-Status: In progress — finalizing assignments and files with API readback and download checks.
-
-7. Publication — rendered slides, GitHub main/origin/main, GitHub Pages and Canvas 08 - Slides link (module item 3180665).
-Issue/evidence: The named local 08-Explanatory-Variables.html now contains the current 42-slide source, including the verified regional Exercise 7 on slides 40–42 (completed #12). Cam deleted index.html; that deletion remains preserved. The last read-only deployment check found Kroger/Exercise 9 on GitHub Pages; the revised local version has not been published. Canvas links to https://cdbale.github.io/08-Explanatory-Variables/. Cam chose Render locally only; no GitHub submission or Canvas hyperlink edits are authorized.
-Change proposed: If later authorized, commit and push intended verified lecture changes, verify Pages and refresh/read back the Canvas link if authorized/needed.
-Effect: The locally verified render remains unpublished; GitHub submission and Canvas distribution were explicitly deferred.
-Decision: Approve — Cam explicitly requested commit, push, GitHub Pages verification and Canvas slide-link update on 2026-10-09.
-Status: In progress — index.html has been restored and is byte-identical to the verified 42-slide named HTML; publishing both and verifying the deployed page.
+AUTHORIZED PUBLICATION — VERIFIED ENTRIES MOVED TO CHAT COMPLETED
 
 USER REQUESTED CHANGES
 (Reserved for Cam's additions.)
