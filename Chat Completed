@@ -214,3 +214,12 @@ Status: Verified.
 Verification — 2026-10-09: Main was committed and pushed as 8fd9a6d3c39455d364d96eb4a02b01e8d94025f8. GitHub Pages run 37981017079 completed successfully for that exact commit. index.html and the named 08-Explanatory-Variables.html are byte-identical. Fresh HTTP fetches of Pages and the saved Canvas 08 - Slides link (module item 3180665) exactly match the final 42-slide HTML after normalizing line endings. Canvas link is https://cdbale.github.io/08-Explanatory-Variables/?v=8fd9a6d3c39455d364d96eb4a02b01e8d94025f8. Latest render inspection has no overflow across all 42 slides. Current reordered starter and regional solution execution checks passed. This completion record will be committed and pushed as the final tracking update, with final local/remote and deployment checks performed afterward.
 
 Final Lecture 08 checklist audit — 2026-10-09: 1 slides Verified; 2 exercise Verified; 3 starter alignment Verified; 4 prior-material practice gaps Verified; 5 Exercise 7 Canvas instructions Verified; 6 grading rubric note Verified; 7 starter upload Verified; 8 GitHub publication Verified (material commit plus final completion-record push); 9 Pages and Canvas hyperlink Verified. No approved Lecture 08 tasks remain active. Additional course-module organization and Lecture 10 render follow-up are reported separately.
+
+
+18. Post Exercise 7 solution beneath Grade Exercise 7 in Canvas — 2026-10-09.
+Issue/evidence: The solution file was uploaded and linked in the assignment description, but its separate module entry was missing.
+Change: Add the existing Exercise 7 Solution.qmd file directly after Grade Exercise 7 in the Inference module, avoiding duplicate uploads and retaining its scheduled release.
+Decision: Approve — Cam requested completing the missing solution posting; original publication authorization remains applicable.
+Status: Verified.
+Verification: Canvas module item 3298201 is published, references the existing verified solution file 14021293, and sits at position 24 immediately after Grade Exercise 7 (3180670, position 23). File availability remains 2026-10-22T23:00:00Z, October 22 at 5 p.m. MDT. API readback confirms exactly one solution module entry; no duplicate upload or unrelated changes. Assignment-description solution link remains intact.
+
