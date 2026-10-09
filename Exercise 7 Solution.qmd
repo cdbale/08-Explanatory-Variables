@@ -4,146 +4,129 @@ author: "Cameron Bale"
 format: docx
 ---
 
-## Exercise 7 | Explain Customer Value
+## Exercise 7 | Regional Spending Differences
 
-The retailer wants a report explaining **household composition** and whether **visits and product views add distinct information** about past spending.
+The retailer asks: **Do customers in different regions spend differently, and do those differences persist after accounting for household characteristics?**
 
-Use `home_goods_customers.csv` and `data_dictionary.pdf`. The outcome is `PreviousSpend`, spending over the previous 12 months. Express income in thousands of dollars and home size in hundreds of square feet; use **high school or less** as the education baseline.
+Use `home_goods_customers.csv` and `data_dictionary.pdf`. Your outcome is `PreviousSpend`, spending over the previous 12 months. Choose and report a baseline for `Region` and any other categorical predictor.
 
-Your household profile includes **income, household size, homeownership, home size, age and education**. Assess what changes when it also accounts for **children at home**. With those household characteristics included, compare an analysis using **visits** with one using **both visits and product views**.
+Compare **two to three models** that account for regions and some demographic characteristics of your choosing.
 
-Use the same customers with observed values for every model variable; report the sample size. Choose your code operations and their sequence.
+Use the same customers for each comparison and report the sample size. Use clear units, such as thousands of dollars for income. Choose the code operations and their sequence.
 
-## Exercise 7 | Evidence for the Client
+## Exercise 7 | Evidence for the Client {.smaller}
 
-Submit a Word report rendered from Quarto with your code, results, and interpretation. Include:
+Submit a Word report rendered from Quarto with your code, results and interpretation. Include:
 
-- The four requested models (profile, composition, composition plus visits, and composition plus both browsing measures) and their $R^2$ values. Explain what the added information contributes.
-- A coefficient table with 95% intervals and a slope plot for the model with household composition. Interpret income and graduate education in dollars, holding other included characteristics fixed.
-- The household-size estimates before and after accounting for children. Explain the change and interpret household size and children when both are included.
-- The visits–views correlation, the visits coefficient's 95% interval in the two browsing models, and VIFs for the model with both browsing measures. Assess collinearity and explain what these results imply for separating the associations.
+- Your models, reasons for the household variables you selected, and each model's $R^2$.
+- A coefficient table with 95% intervals and a plot of the point estimates and confidence intervals of your preferred model. Interpret one regional comparison and one continuous slope, holding other included variables fixed.
+- A comparison of the regional estimates before and after accounting for household characteristics. Explain what changes, how omitted variables could affect the comparison, and what the intervals tell you.
+- A check for multicollinearity using VIF after fitting your models. Explain any concerns and justify one decision to include or exclude a candidate variable.
 
-## Exercise 7 | Customer Profiles {.smaller}
+## Exercise 7 | Compare the Same Household Across Regions
 
-Use the model with **household composition and no browsing variables** to predict spending for these profiles:
+Use your preferred model to predict spending in **all four regions** for a household with **characteristic values of your choosing**.
 
-| Annual income | People | Owns home | Sq. ft. | Age | Children | Education |
-|---:|---:|---:|---:|---:|---:|---|
-| $40,000 | 1 | 0 | 800 | 30 | 0 | High school or less |
-| $80,000 | 2 | 1 | 1,600 | 45 | 0 | Bachelor's |
-| $120,000 | 4 | 1 | 2,400 | 45 | 2 | Graduate |
+Choose and report values for the characteristics included in your model. Keep those values fixed across regions, changing only `Region`. Explain the predicted regional differences alongside their coefficient uncertainty.
 
-Conclude which customer information seems useful for describing historical value. Explain one plausible influence still missing from the models, and why profile predictions do not establish what sending an email would cause.
+Recommend whether region is useful for describing customer value. Identify one plausible influence still omitted, and explain why the regional comparisons do not establish what a change in location or an email campaign would cause.
 
 Upload your Word report to Canvas's **Exercise 7** assignment.
 
 ## Grading Rubric | 5 Points
 
-Award one point for each row; partial credit is appropriate for a substantially correct analysis with a small error.
+Award one point for each row; partial credit is appropriate for a substantially correct analysis with a small error. Different baselines, household predictors and defensible model choices can receive full credit.
 
 | Point | Full-credit evidence |
 |---|---|
-| 1. Models and fit | Four correct models use the same 9,603 customers, correct units and education baseline; all four R-squared values are reported and explained. |
-| 2. Coefficients and uncertainty | Composition-model coefficient table, 95% intervals and slope plot are correct; income and graduate education are interpreted in dollars holding other included characteristics fixed. |
-| 3. Omitted variable | Household-size slopes are compared; the explanation connects children with both household size and spending and correctly interprets size and children when both are included. |
-| 4. Overlapping information | Visits–views correlation, the visits intervals in both browsing models and combined-model VIFs are correct; the report assesses collinearity and explains why the separate associations are harder to estimate precisely. |
-| 5. Client recommendation | Three requested predictions are correct; the Word report gives a justified recommendation, a plausible remaining omitted influence and the distinction between profile predictions and email effects. |
+| 1. Model choices and fit | Two to three models address the regional question using demographic characteristics of the student's choosing, with reasons for their selections. Categorical baselines, units, common comparison sample and sample size are reported; R-squared values are correctly explained. |
+| 2. Coefficients and uncertainty | The coefficient table with 95% intervals and a plot of the point estimates and confidence intervals of the preferred model are correct. One regional comparison and one continuous slope are interpreted in dollars, holding other included predictors fixed. |
+| 3. Regional comparison and omitted variables | Regional coefficients before and after adjustment are compared. The explanation distinguishes the two comparisons, considers an omitted-variable story and uses intervals without claiming that any coefficient change proves causality. A small change or uncertain regional difference is a valid finding. |
+| 4. Predictor overlap and judgment | VIFs are correctly assessed after fitting the models, and one inclusion or exclusion decision is justified using the business story and evidence. Full credit does not require a high VIF or dropping a variable. |
+| 5. Profiles and recommendation | The student chooses and reports values for the characteristics in their model, holds those values fixed across all four regions, and computes correct predictions. The Word report gives an evidence-based recommendation, a plausible remaining omitted influence and the distinction between associations and intervention effects. |
 
-## Prepare the Customer Data
+## Example Solution | A Regional Customer Story
 
-This is one implementation of the client report.
+This example uses **West** as the regional baseline. It accounts for income, household size, homeownership and home size: four characteristics representing household resources and demand for home goods. A third model checks whether website activity adds useful information. Other justified choices are acceptable.
 
 ```{r}
 library(tidyverse)
 library(tidymodels)
 
 customers <- read_csv("home_goods_customers.csv", show_col_types = FALSE)
-```
 
-```{r}
-customer_model_data <- customers |>
-  drop_na(PreviousSpend, HouseholdIncome, HouseholdSize, Homeowner,
-          HomeSizeSqFt, Age, Education, ChildrenAtHome,
-          SiteVisits30d, ProductViews30d) |>
-  mutate(IncomeThousands = HouseholdIncome / 1000,
-         HomeSizeHundreds = HomeSizeSqFt / 100)
-
-nrow(customer_model_data)
-```
-
-```{r}
-customer_model_data <- customer_model_data |>
+region_data <- customers |>
+  drop_na(PreviousSpend, Region, HouseholdIncome, HouseholdSize,
+          Homeowner, HomeSizeSqFt, SiteVisits30d, ProductViews30d) |>
   mutate(
-    EducationSomeCollege = if_else(Education == "Some college/associate", 1, 0),
-    EducationBachelors = if_else(Education == "Bachelor's", 1, 0),
-    EducationGraduate = if_else(Education == "Graduate", 1, 0)
+    IncomeThousands = HouseholdIncome / 1000,
+    HomeSizeHundreds = HomeSizeSqFt / 100,
+    RegionNortheast = if_else(Region == "Northeast", 1, 0),
+    RegionMidwest = if_else(Region == "Midwest", 1, 0),
+    RegionSouth = if_else(Region == "South", 1, 0)
   )
+
+nrow(region_data)
 ```
 
-All four models use **9,603 customers**, so the comparisons reflect added information rather than different samples. Income is measured in $1,000 units and home size in 100-square-foot units. The education baseline is high school or less.
+All three models use **9,603 customers**. West customers have zero for all three regional indicators. The other regional coefficients compare their region with West. Using an intercept and all four indicators would be redundant.
 
-## Fit the Four Spending Models
-
-```{r}
-fit_profile <- linear_reg() |>
-  set_engine("lm") |>
-  fit(PreviousSpend ~ IncomeThousands + HouseholdSize + Homeowner +
-        HomeSizeHundreds + Age + EducationSomeCollege +
-        EducationBachelors + EducationGraduate,
-      data = customer_model_data)
-```
+## Compare Regions, Then Account for Household Characteristics
 
 ```{r}
-fit_composition <- linear_reg() |>
+fit_region <- linear_reg() |>
   set_engine("lm") |>
-  fit(PreviousSpend ~ IncomeThousands + HouseholdSize + Homeowner +
-        HomeSizeHundreds + Age + EducationSomeCollege +
-        EducationBachelors + EducationGraduate + ChildrenAtHome,
-      data = customer_model_data)
-```
+  fit(PreviousSpend ~ RegionNortheast + RegionMidwest + RegionSouth,
+      data = region_data)
 
-```{r}
-fit_visits <- linear_reg() |>
+fit_household <- linear_reg() |>
   set_engine("lm") |>
-  fit(PreviousSpend ~ IncomeThousands + HouseholdSize + Homeowner +
-        HomeSizeHundreds + Age + EducationSomeCollege +
-        EducationBachelors + EducationGraduate + ChildrenAtHome +
-        SiteVisits30d,
-      data = customer_model_data)
-```
+  fit(PreviousSpend ~ RegionNortheast + RegionMidwest + RegionSouth +
+        IncomeThousands + HouseholdSize + Homeowner + HomeSizeHundreds,
+      data = region_data)
 
-```{r}
-fit_browsing <- linear_reg() |>
+fit_candidate <- linear_reg() |>
   set_engine("lm") |>
-  fit(PreviousSpend ~ IncomeThousands + HouseholdSize + Homeowner +
-        HomeSizeHundreds + Age + EducationSomeCollege +
-        EducationBachelors + EducationGraduate + ChildrenAtHome +
+  fit(PreviousSpend ~ RegionNortheast + RegionMidwest + RegionSouth +
+        IncomeThousands + HouseholdSize + Homeowner + HomeSizeHundreds +
         SiteVisits30d + ProductViews30d,
-      data = customer_model_data)
-```
+      data = region_data)
 
-## Compare Model Fit
-
-```{r}
-bind_rows(
-  profile = glance(fit_profile), composition = glance(fit_composition),
-  visits = glance(fit_visits), visits_and_views = glance(fit_browsing),
-  .id = "model"
+model_fit <- bind_rows(
+  region = glance(fit_region), household = glance(fit_household),
+  browsing = glance(fit_candidate), .id = "model"
 ) |>
   select(model, r.squared)
+model_fit
 ```
 
-The household profile explains about **52.7%** of spending variation. Adding children increases this to **53.4%**. Adding visits, then product views, leaves it at approximately **53.4%**: these browsing measures add almost no information about historical spending beyond the household characteristics here.
+Region alone explains about **0.02%** of spending variation. The household-adjusted model explains about **51.2%**; adding browsing leaves it at approximately **51.2%**. Household information is much more useful here than region alone. Higher R-squared by itself does not establish a causal relationship or better predictions for new customers.
 
-Adding predictors cannot lower R-squared for these nested models on the same customers. Higher fit alone does not establish a causal relationship or better prediction for new customers.
-
-## Interpret the Household Composition Model
+## What Changes in the Regional Comparison?
 
 ```{r}
-composition_estimates <- tidy(fit_composition, conf.int = TRUE)
-composition_estimates
+regional_comparison <- bind_rows(
+  region = tidy(fit_region, conf.int = TRUE),
+  household = tidy(fit_household, conf.int = TRUE), .id = "model"
+) |>
+  filter(term %in% c("RegionNortheast", "RegionMidwest", "RegionSouth")) |>
+  select(model, term, estimate, conf.low, conf.high)
+regional_comparison
+```
 
-composition_estimates |>
+Relative to West, the initial differences are about **−$1.98 for Northeast**, **−$2.51 for Midwest**, and **$4.73 for South**. After accounting for the four household characteristics, they are about **$5.27**, **−$3.69**, and **$3.03**, respectively. All of these regional intervals include zero.
+
+The first model compares the customers living in each region, including differences in their household profiles. The second compares regions while holding the included household characteristics fixed. For example, income could affect spending and differ across regions; omitting it could mix household resources into a regional coefficient. Here, the regional differences are small and uncertain both before and after adjustment. We should not claim a strong regional relationship or dramatic omitted-variable bias from this comparison.
+
+## Interpret the Preferred Model
+
+The household-adjusted model is preferred in this example: it answers the regional question, describes household spending differences and avoids adding two overlapping browsing measures that barely improve fit.
+
+```{r}
+household_estimates <- tidy(fit_household, conf.int = TRUE)
+household_estimates
+
+household_estimates |>
   filter(term != "(Intercept)") |>
   ggplot(aes(x = term, y = estimate)) +
   geom_point() +
@@ -152,96 +135,61 @@ composition_estimates |>
   coord_flip()
 ```
 
-Holding the other included characteristics fixed:
+Holding the other included characteristics fixed, Northeast customers spend about **$5.27 more than West customers**, with a 95% interval of approximately **−$4.41 to $14.95**. The estimate does not provide clear evidence of a difference. Another **$1,000 of annual income** is associated with about **$2.29 more spending**, with an interval of approximately **$2.23 to $2.35**.
 
-- Another **$1,000 of income** is associated with about **$2.05** more spending (95% interval **$1.98–$2.12**).
-- **Graduate education** is associated with about **$56.94** more spending than high school or less (95% interval **$45.39–$68.49**).
+The intercept describes West customers with zero income, zero household size, zero home size and no homeownership. That is not a realistic customer profile. The confidence intervals quantify uncertainty about coefficients, not the range of individual spending.
 
-The intercept describes a baseline-education nonowner with zero income, household size, home size, age and children. That is outside the observed customer profiles. Predictor units differ, so raw slope magnitudes do not rank business importance. The intervals describe uncertainty about coefficients, not the range of individual spending.
-
-## What Was Missing from the Household-Size Story?
+## Check Overlap and Make a Variable Decision
 
 ```{r}
-bind_rows(
-  profile = tidy(fit_profile, conf.int = TRUE),
-  composition = tidy(fit_composition, conf.int = TRUE),
-  .id = "model"
-) |>
-  filter(term == "HouseholdSize") |>
-  select(model, estimate, conf.low, conf.high)
-```
-```{r}
-customer_model_data |>
-  group_by(HouseholdSize) |>
-  summarise(MeanChildren = mean(ChildrenAtHome), .groups = "drop")
-```
+fit_candidate |>
+  extract_fit_engine() |>
+  car::vif() |>
+  enframe(name = "predictor", value = "VIF") |>
+  arrange(desc(VIF))
 
-The household-size slope falls from **$38.06** to **$27.78** after children are included. Larger households tend to have more children, and children have their own relationship with spending. The earlier size slope combined these two parts of the story: this illustrates omitted-variable bias.
-
-With both included, the size slope compares households with the **same number of children**; an extra member is therefore an extra adult. The children slope is about **$29.47**, holding **total household size** fixed; it compares a child with an adult in a household of the same size. Neither slope by itself establishes what a change would cause.
-
-## Do Browsing Measures Tell Us Different Things?
-
-```{r}
-cor(customer_model_data$SiteVisits30d, customer_model_data$ProductViews30d)
-```
-```{r}
-bind_rows(
-  visits = tidy(fit_visits, conf.int = TRUE),
-  visits_and_views = tidy(fit_browsing, conf.int = TRUE),
-  .id = "model"
-) |>
-  filter(term == "SiteVisits30d") |>
-  select(model, estimate, conf.low, conf.high)
-```
-
-Visits and views have a correlation of about **0.91**, indicating substantial overlap. With visits alone added to the household model, the visits slope is about **−$0.04**, with a 95% interval of **−$0.71 to $0.62**. With product views also included, it is about **−$0.24**, with an interval of **−$1.71 to $1.23**.
-
-The second interval is more than twice as wide. Customers who visit more generally view more products, making it harder to separate each measure's association with spending. This illustrates multicollinearity. Both intervals include zero, and browsing barely changes fit; we should not claim that one coefficient proves a distinct spending driver. Overlap does not by itself systematically bias a slope, and some correlation is not automatically a reason to remove a relevant variable.
-
-## Assess Collinearity with VIF
-
-```{r}
-fit_browsing |>
+fit_household |>
   extract_fit_engine() |>
   car::vif() |>
   enframe(name = "predictor", value = "VIF") |>
   arrange(desc(VIF))
 ```
 
-The `car` package must be installed to use `car::vif()`.
+The `car` package must be installed to use `car::vif()`, as in the lecture.
 
-Visits have a VIF of about **6.35** and views about **5.90**; every other predictor's VIF is below **2.4**. These two browsing measures stand out for their overlap with other predictors, consistent with the wider confidence interval for visits when views are also included. VIF measures inflation in coefficient variance, not bias or business importance. Use it to investigate whether both measures provide distinct information, rather than automatically dropping a variable.
+Visits and views have VIFs of about **6.20** and **5.81** in the candidate model, exceeding the lecture's guideline of 4. They contain strongly overlapping information, making their separate slopes harder to estimate precisely. All VIFs in the preferred household model are below **1.9**.
 
-## Predict the Requested Customer Profiles
+This example excludes both browsing measures: neither is needed for the household-comparison question, they barely change fit, and retaining both adds an interpretation problem.
+
+## Predict the Same Household Across Regions
+
+For this example, choose annual income of $80,000, household size of three, homeownership and home size of 1,600 square feet. These are values for the characteristics included in the preferred model. Students may choose other values; hold the chosen profile fixed across regions.
 
 ```{r}
 profiles <- tibble(
-  Profile = c("Lower-income baseline", "Middle-income homeowner",
-              "Higher-income graduate"),
-  IncomeThousands = c(40, 80, 120),
-  HouseholdSize = c(1, 2, 4),
-  Homeowner = c(0, 1, 1),
-  HomeSizeHundreds = c(8, 16, 24),
-  Age = c(30, 45, 45),
-  ChildrenAtHome = c(0, 0, 2),
-  EducationSomeCollege = c(0, 0, 0),
-  EducationBachelors = c(0, 1, 0),
-  EducationGraduate = c(0, 0, 1)
+  Region = c("West", "Northeast", "Midwest", "South"),
+  RegionNortheast = c(0, 1, 0, 0),
+  RegionMidwest = c(0, 0, 1, 0),
+  RegionSouth = c(0, 0, 0, 1),
+  IncomeThousands = 80,
+  HouseholdSize = 3,
+  Homeowner = 1,
+  HomeSizeHundreds = 16
 )
 
 profile_predictions <- bind_cols(
-  profiles, predict(fit_composition, new_data = profiles)
-)
+  profiles, predict(fit_household, new_data = profiles)
+) |>
+  select(Region, .pred)
 profile_predictions
 ```
 
-Predicted past spending is **$708.12**, **$964.93**, and **$1,214.14**, respectively. Several characteristics change together, so the differences cannot be attributed to one characteristic alone.
+Predicted spending is roughly **$1,000 in West**, **$1,005 in Northeast**, **$997 in Midwest**, and **$1,003 in South**. The household inputs are identical, so differences equal the corresponding regional coefficients. These small point differences should be read alongside the intervals; they do not establish that one region has a higher expected value with confidence.
 
-## Recommendation to the Client
+## Recommendation and Remaining Questions
 
-Use household characteristics, including children, to describe historical customer value. The third profile has the highest predicted spending and could inform an outreach segment. Collecting both browsing measures adds little to this particular spending explanation; their separate coefficients are also uncertain.
+These results give little support for prioritizing customers simply because of their region. Household characteristics explain substantially more spending variation. Region may still matter for other decisions, such as shipping costs, which this spending model does not address.
 
-**Customer tenure** is one plausible remaining omitted influence: longer-standing customers may spend more at this retailer, and tenure may be associated with age or homeownership. An acceptable alternative should explain both its relationship with spending and with an included predictor.
+**Local store access** is one plausible omitted influence: access may vary across regions and affect how easily customers shop with this retailer. The broad region labels and included household characteristics do not capture it. Other well-explained omitted influences are acceptable.
 
-Historical value does not establish who will respond to an email. Profile predictions describe spending associations; they do not estimate what sending an email would cause. For that decision, compare subsequent campaign spending for customers randomly assigned to email and control. Be transparent about uncertainty and do not choose variables just to obtain significance.
+The analysis describes associations in historical spending. It does not establish what moving the same household to another region would cause, or how that household would respond to an email campaign.

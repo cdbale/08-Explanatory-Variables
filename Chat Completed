@@ -129,3 +129,68 @@ Change: Add VIF above 4 as a rule of thumb warranting investigation, and note th
 Decision: Approve — explicitly requested by Cam on 2026-10-08.
 Status: Verified — source inspected.
 Verification: Inspected the rule, new slide placement, matching workbook text and the existing smaller-slide convention. Penn State STAT 462 guidance supports VIF above 4 as a threshold for investigation: https://online.stat.psu.edu/stat462/node/180/. No code or exercise requirements changed; no rendering performed.
+
+
+11. Move Lecture 08 slides 39–42 to the opening of Lecture 10 — 2026-10-09.
+Target: 08 Explanatory Variables.Rmd and 10-Preprocess-Data/12 Preprocess Data.Rmd. Slides: Don't be a Cuttlefish!; Have Integrity; Pressure, Decisions, and Consequences; What Should I Do?
+Issue/evidence: Cam explicitly requested relocating the current four-slide block to the beginning of the preprocessing lecture. Current source numbering confirms those titles at slides 39–42.
+Change: Remove the complete block from Lecture 08 and insert it immediately after Lecture 10's title slide, preserving its wording and order. Copy Figures/cuttlefish.jpg to the destination lecture. Place Today's Learning Goals after the opening spiritual/integrity block, adapting the existing preprocessing goals to include analytical integrity.
+Effect: No R chunks, starter code, exercise or solution changes are needed for this relocation. Rendered output is not regenerated for this source-only change. Canvas and GitHub publication remain deferred.
+Decision: Approve — Cam's explicit request on 2026-10-09.
+Status: Verified.
+Verification: Saved source comparison confirms the four slides moved verbatim and in order, source slide count decreased by four, destination opens with these four slides followed by learning goals, both exercises and every R code chunk are unchanged, and all referenced assets exist. Copied illustration is byte-identical. No render, Canvas edit, commit or push performed. Checklist: 1 source relocation Verified; 2–7 Not applicable to this narrow request; 8 GitHub publication Blocked (previously deferred); 9 published slide update Needs update (deferred).
+
+
+12. Exercise independence review — slides 40–42, Exercise 7; corresponding starter, solution and rubric — 2026-10-09.
+Issue/evidence: The exercise specifies four models already fitted in the lecture, the same education baseline, the already-demonstrated household-size/children comparison, the same visits/views correlation and confidence-interval comparison, and the same VIF diagnostic. Independent work is mainly the three profile predictions, an additional omitted influence and the client recommendation. Leaving code operations unspecified does not make the analytical decisions independent when the specifications and conclusions have already been demonstrated.
+Change proposed: Reframe the exercise around a new business question using the same data: do regional spending differences persist after accounting for household characteristics? Students choose a Region baseline and a small, justified set of household predictors, compare two or three models, interpret coefficients and intervals, assess overlap/VIF among candidate predictors and explain their inclusion decisions. Retain a short profile-prediction comparison and a limitation about intervention claims. Do not prescribe the same four fitted models or the classroom conclusions. Use only methods taught in this lecture and earlier lectures.
+Effect: If approved, revise only the exercise slides, matching starter exercise instructions, solution and five-point rubric. Lecture demonstrations remain unchanged. A model/results feasibility check would precede implementation; no particular regional pattern is assumed in this proposal.
+Decision: Approve — Cam requested implementation of the regional-spending exercise on 2026-10-09.
+Status: Verified.
+Verification: Exercise slides 40–42 now pose the regional-spending question. Students choose a categorical baseline and three to five household characteristics, compare two or three models, interpret coefficients/intervals, assess correlations/VIF and justify variable choices, predict one otherwise identical household in four regions, and give a recommendation with an omitted influence and causal limitation. No specific code operations or numerical conclusion are prescribed. The starter carries identical instructions while retaining its blank final analysis chunk and all existing practice gaps. The example solution uses West as baseline, four justified household controls and an optional third browsing model; the revised five-point rubric accepts different defensible baselines, controls and findings. Every solution R chunk parsed and executed. The example's common 9,603-row sample, regional coefficients and zero-spanning intervals, R-squared values, VIFs/correlation and four predictions were verified against execution. Before/after checks confirm that the lecture demonstrations and all source/starter R chunks are unchanged. Named local HTML was rendered under the existing local-render authorization; exercise slides 40–42 were visually inspected with no detected overflow. index.html remains deleted. No Canvas write, commit or push occurred.
+Final checklist: 1 slides Verified; 2 exercise/solution/rubric Verified; 3 starter alignment Verified; 4 existing practice gaps Verified (preserved); 5 Canvas exercise description Needs update (user-deferred); 6 Canvas grading note Needs update (user-deferred); 7 Canvas starter upload Needs update (user-deferred); 8 GitHub publication Blocked (user-deferred); 9 published slides/Canvas link Needs update (user-deferred).
+
+
+13. Exercise 7 plot wording — slide 41, starter instructions, solution instructions and rubric — 2026-10-09.
+Issue/evidence: Cam requested that the plot requirement name point estimates and confidence intervals explicitly.
+Change: Use "a plot of the point estimates and confidence intervals of your preferred model" in the exercise instructions and matching terminology in the rubric.
+Effect: Wording only; no analysis, code or grading criteria change. Refresh the authorized local slide render.
+Decision: Approve — Cam's explicit wording request.
+Status: Verified.
+Verification: Requested wording is present in the slide source, starter, solution and named local HTML; rubric uses the same explicit point-estimate/confidence-interval terminology. No old plot label remains in those artifacts. The local slides were rendered and slide 41 visually inspected with no overflow. Existing unrelated user edits were preserved. No code, analysis, Canvas or GitHub changes. Checklist 1-3 Verified for this wording correction; 4 Not applicable; 5-7 and 9 Needs update (previously deferred); 8 Blocked (previously deferred).
+
+
+14. Exercise 7 VIF requirement — slide 41, starter, solution and rubric — 2026-10-09.
+Issue/evidence: Cam requested removing the correlation-check requirement; VIF after fitting is sufficient.
+Change: Require VIF after model fitting, remove the correlation calculation and numerical correlation interpretation from the exercise solution, and remove correlation assessment from the rubric.
+Effect: Exercise-only adjustment; the lecture's worked correlation illustration remains unchanged. Refresh the authorized local render.
+Decision: Approve — Cam's explicit request.
+Status: Verified.
+Verification: Exercise source, starter, solution instructions and local HTML now require VIF after fitting, with no correlation-check requirement. Rubric assesses VIF only; solution's correlation calculation and interpretation were removed. Solution R chunks execute successfully with verified VIFs and unchanged model/profile results. Slide 41 was locally rendered and visually checked with no overflow. Lecture illustrations and unrelated user edits were preserved. No Canvas write, commit or push. Checklist 1-3 Verified for this change; 4 Not applicable; 5-7 and 9 Needs update (deferred); 8 Blocked (deferred).
+
+
+15. Exercise 7 model-choice paragraph — slide 40, starter and solution instructions — 2026-10-09.
+Issue/evidence: Cam requested a simpler third paragraph, specifying only two to three models accounting for regions and demographic characteristics students choose.
+Change: Use "Compare two to three models that account for regions and some demographic characteristics of your choosing." Carry the sentence into starter and solution instructions; remove the obsolete three-to-five-characteristic restriction from the rubric.
+Effect: No R code or worked-model changes. Refresh the authorized local slide render.
+Decision: Approve — Cam's explicit request.
+Status: Verified.
+Verification: Requested sentence matches in slide source, starter and solution instructions. The rubric has no three-to-five-characteristic restriction. The local HTML was rendered and slide 40 visually inspected with no overflow. No code, model, Canvas or GitHub changes. Checklist 1-3 Verified for this correction; 4 Not applicable; 5-7 and 9 Needs update (previously deferred); 8 Blocked (previously deferred).
+
+
+16. Exercise 7 student-chosen household values — slide 42, starter, solution and rubric — 2026-10-09.
+Issue/evidence: Cam requested allowing students to choose values for their own model's characteristics, since their selected predictors differ.
+Change: Replace the prescribed household with a student-chosen and reported profile. Hold all chosen characteristic values fixed across the four regions, changing only Region. Align the rubric and label the solution's fixed values as an example.
+Effect: No code or numerical example changes. Refresh the authorized local slide render.
+Decision: Approve — Cam's explicit request.
+Status: Verified.
+Verification: Slide source, starter and solution instructions use student-chosen, reported values for characteristics in each student's model and hold them fixed across four regions. The rubric accepts that profile; solution values are explicitly an example. R code and numerical results are unchanged. Local HTML was rendered and slide 42 visually inspected with no overflow. No Canvas write, commit or push. Checklist 1-3 Verified for this correction; 4 Not applicable; 5-7 and 9 Needs update (previously deferred); 8 Blocked (previously deferred).
+
+
+17. Starter alignment with current slides — 2026-10-09.
+Issue/evidence: Cam approved fixing section order, aligning VIF guidance and removing the extra exercise sentence, while keeping the omitted-variable bias direction explanation slide-only. That direction explanation was already absent from the starter.
+Change: Move parameter interpretation before its estimate-table practice, omitted-variable definition before its household example, multicollinearity definition before website activity, and the visits/views illustration before the visits model. Copy the current slide wording for the VIF definition/threshold and collinear-variable selection guidance. Remove the extra exercise sentence. Preserve all supplied R code and intentional student gaps.
+Effect: Starter-only edit; no slide, solution, rendered HTML, Canvas or GitHub changes.
+Decision: Approve — Cam's explicit instructions on 2026-10-09.
+Status: Verified.
+Verification: The reordered sections follow the current slide sequence for all represented topics. Both VIF guidance sections match the slide text exactly, the Exercise 7 instructions now match verbatim, and no bias-direction formula or explanation occurs in the starter. Every supplied R chunk and intentional gap is unchanged. All reordered chunks parse and execute with preparation supplied only in memory, using the same 9,603 rows and matching all five slide-model coefficients. Hash checks confirm the slide source, solution and rendered HTML were not changed. No Canvas write, commit or push. Checklist 1-2 Not applicable to this starter-only request; 3-4 Verified; 5-7 and 9 Needs update (previously deferred); 8 Blocked (previously deferred).

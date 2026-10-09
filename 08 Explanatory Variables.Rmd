@@ -269,14 +269,14 @@ bind_rows(
   select(model, estimate, conf.low, conf.high)
 ```
 
-The slope falls from about **$38 to $28** per household member. With composition included, this comparison now also holds the number of children fixed.
+The slope falls from about **$38 to $28** per household member. With the number of children fixed, increasing the number of adults is associated with an increase in spending of $28 on average.
 
 With household size fixed, another child is associated with about **$29** more spending.
 
 ## Recommendations for Handling Omitted Variables
 
 - Ask what a variable's coefficient might be standing in for: are there other variables that could be correlated with one of your independent variables *and* your outcome?
-- Recognize the potential for the omitted variable problem, and do your best to account for it: either by collecting additional variables, or being honest about what the model does/does not tell us. "The model says an additional household member is associated with increased spending, but that effect might depend on whether the household members are adults or children."
+- Recognize the potential for the omitted variable problem, and do your best to account for it: either by collecting additional variables, or being honest about what the model does/does not tell us.
 
 ## Omitted Variable Bias: Which Direction? {.smaller}
 
@@ -389,11 +389,9 @@ bind_rows(
 
 Compare each predictor's 95% interval when it is the **only browsing measure** versus when **both** are included. Both intervals become **more than twice as wide**.
 
-Visits and views use different units; compare interval widths for the **same predictor**.
-
 ## Identify Overlap with VIF {.smaller}
 
-**Variance inflation factor (VIF)** measures how much overlap with the other predictors inflates a coefficient's variance. A VIF of **1** means no overlap; larger values mean more.
+**Variance inflation factor (VIF)** measures the extent to which multicollinearity will affect our coefficient estimates. A VIF of **1** means no overlap; larger values mean more.
 
 ```{r}
 fit_browsing |>
@@ -404,7 +402,7 @@ fit_browsing |>
   slice_head(n = 5)
 ```
 
-**Rule of thumb:** a **VIF above 4** is high enough to investigate multicollinearity. Visits (**6.35**) and views (**5.90**) both exceed this guideline; it is not an automatic removal rule.
+**Rule of thumb:** a **VIF above 4** indicates an issue with multicollinearity. Here, we identify `SiteVisits30d` and `ProductViews30d` as collinear.
 
 `car::vif()` requires the `car` package. Install it once if needed: `install.packages("car")`.
 
@@ -412,47 +410,9 @@ fit_browsing |>
 
 - **Start with the business question.** Keep the measure that best represents the concept you want to explain: visits describe overall website activity; product views describe product browsing.
 - **Prefer reliable, practical measures.** Consider measurement quality, missing values, timing, collection cost and ease of interpretation.
-- **Compare the alternatives on the same customers.** Look at model fit, coefficient estimates and confidence intervals. If fit is similar, prefer the measure with the clearest business rationale.
-- **Protect necessary controls.** Keep both if they represent distinct, important parts of the story; dropping a relevant variable can introduce omitted-variable bias.
-- **Do not choose by the smallest p-value or VIF alone.** Explain the tradeoff and recheck VIF after changing the model.
+- **Do not choose by the smallest p-value or VIF alone.** Explain your decision in the context of the business question and recheck VIF after changing the model.
 
-Here, neither browsing measure adds much to the household model. Keeping **neither** is also reasonable if the business story does not require them.
-
-## Best Practices
-
-- Visits and views give the model fewer distinct comparisons with which to separate their slopes. Estimates can be unstable and intervals wider.
-- This differs from omitted-variable bias: correlation alone does not systematically bias a slope.
-- Exact dependence can make separate slopes impossible to estimate; moderate correlation is not automatically a reason to remove a variable.
-
-Inspect the relationships before interpreting each coefficient as a separate business driver. `cor()` is a useful starting check; combinations of several predictors can also overlap.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Model Fit | Did the Extra Information Help? {.smaller}
+## Assess Model Fit: Did the Extra Information Help? {.smaller}
 
 ```{r}
 bind_rows(
@@ -464,90 +424,51 @@ bind_rows(
   select(model, r.squared)
 ```
 
-Composition improves the description. Browsing adds almost nothing here: the composition model and all three browsing models have $R^2$ about **0.534**.
-
-Adding predictors cannot lower $R^2$ on the same rows. Visits-only and views-only are alternatives; neither adds a predictor to the other. More columns do not automatically give more useful insight.
-
-## Considerations | Start with a Plausible Story
-
-- Check units, timing, and relationships. A variable that is a function of another may be redundant.
-- Consider omitted influences that affect both the outcome and included predictors.
-- Use uncertainty and model comparisons together; significance alone is not a reason to include or exclude a variable.
-- Before recommending an intervention, explain why the design addresses alternative stories.
+Composition improves the description. Browsing adds almost nothing here: the composition model and all three browsing models have $R^2$ about **0.534** (More columns do not automatically give more useful insight).
 
 ## Live Coding | A Useful Outreach Segment
 
 Leadership wants a practical description of **high-value households** and a recommendation about which customer information to collect next.
 
-What should "high-value" mean? What evidence would make a segment useful? What might still be missing from our spending story, and how would we explain uncertainty to the client?
+What should "high-value" mean? What evidence would make a segment useful? 
+
+What might still be missing from our spending story, and how would we explain uncertainty to the client?
 
 Develop an analysis and a recommendation, including the limits of what it tells us about an outreach campaign.
-
-## Don't be a Cuttlefish!
-
-<center>
-![](Figures/cuttlefish.jpg){width=720px}
-</center>
-
-## Have Integrity
-
-"People can behave like cuttlefish, changing their clothing, language, behavior, and thoughts, depending on their surroundings. They might do this in order to impress or be accepted by others. However, this behavior does people more harm than good. In their eagerness to blend in, they can sacrifice their integrity."
-
-[Barbara A. Lewis](https://www.churchofjesuschrist.org/study/ensign/2018/04/integrity?lang=eng)
-
-## Pressure, Decisions, and Consequences
-
-| Case | Pressure and decision | Consequence |
-|---|---|---|
-| Wells Fargo cross-selling fraud | Meet sales goals; employees opened millions of unauthorized accounts. | [Wells Fargo agrees to pay $3 billion in settlement](https://www.justice.gov/archives/opa/pr/wells-fargo-agrees-pay-3-billion-resolve-criminal-and-civil-investigations-sales-practices). |
-| Purdue Pharma opioid scandal | Sell prescription drugs; aggressive marketing downplayed addictive risks and encouraged over-prescription. | [Criminal guilty pleas, $8 billion settlement, dissolution and repurposing for public benefit](https://www.justice.gov/archives/opa/pr/justice-department-announces-global-resolution-criminal-and-civil-investigations-opioid). |
-
-What pressures could tempt an analyst to tell the story management wants to hear?
-
-## What Should I Do?
-
-- Be transparent about analytical decisions and motivations. Don't hunt for statistical significance.
-- Be honest about uncertainty and possible omitted influences.
-- Conduct analyses **in pursuit of truth**, not in pursuit of a specific result.
 
 ## Wrapping Up | What We Learned for the Client
 
 - Interpret each slope holding other included predictors fixed, with explicit categorical baselines.
 - Household size and household composition tell different parts of the spending story. Leaving out a relevant characteristic can distort another slope.
 - Visits and product views overlap; separating their slopes increases uncertainty without meaningfully improving fit here.
-- Coefficients, intervals and $R^2$ support a business explanation. They do not establish what an intervention would cause.
 
 *Next Time*: Overfitting and prediction.
 
-## Exercise 7 | Explain Customer Value
+## Exercise 7 | Regional Spending Differences
 
-The retailer wants a report explaining **household composition** and whether **visits and product views add distinct information** about past spending.
+The retailer asks: **Do customers in different regions spend differently, and do those differences persist after accounting for household characteristics?**
 
-Use `home_goods_customers.csv` and `data_dictionary.pdf`. The outcome is `PreviousSpend`, spending over the previous 12 months. Express income in thousands of dollars and home size in hundreds of square feet; use **high school or less** as the education baseline.
+Use `home_goods_customers.csv` and `data_dictionary.pdf`. Your outcome is `PreviousSpend`, spending over the previous 12 months. Choose and report a baseline for `Region` and any other categorical predictor.
 
-Your household profile includes **income, household size, homeownership, home size, age and education**. Assess what changes when it also accounts for **children at home**. With those household characteristics included, compare an analysis using **visits** with one using **both visits and product views**.
+Compare **two to three models** that account for regions and some demographic characteristics of your choosing.
 
-Use the same customers with observed values for every model variable; report the sample size. Choose your code operations and their sequence.
+Use the same customers for each comparison and report the sample size. Use clear units, such as thousands of dollars for income.
 
-## Exercise 7 | Evidence for the Client
+## Exercise 7 | Evidence for the Client {.smaller}
 
-Submit a Word report rendered from Quarto with your code, results, and interpretation. Include:
+Submit a Word report rendered from Quarto with your code, results and interpretation. Include:
 
-- The four requested models (profile, composition, composition plus visits, and composition plus both browsing measures) and their $R^2$ values. Explain what the added information contributes.
-- A coefficient table with 95% intervals and a slope plot for the model with household composition. Interpret income and graduate education in dollars, holding other included characteristics fixed.
-- The household-size estimates before and after accounting for children. Explain the change and interpret household size and children when both are included.
-- The visits–views correlation, the visits coefficient's 95% interval in the two browsing models, and VIFs for the model with both browsing measures. Assess collinearity and explain what these results imply for separating the associations.
+- Your models, reasons for the household variables you selected, and each model's $R^2$.
+- A coefficient table with 95% intervals and a plot of the point estimates and confidence intervals of your preferred model. Interpret one regional comparison and one continuous slope, holding other included variables fixed.
+- A comparison of the regional estimates before and after accounting for household characteristics. Explain what changes, how omitted variables could affect the comparison, and what the intervals tell you.
+- A check for multicollinearity using VIF after fitting your models. Explain any concerns and justify one decision to include or exclude a candidate variable.
 
-## Exercise 7 | Customer Profiles {.smaller}
+## Exercise 7 | Compare the Same Household Across Regions
 
-Use the model with **household composition and no browsing variables** to predict spending for these profiles:
+Use your preferred model to predict spending in **all four regions** for a household with **characteristic values of your choosing**.
 
-| Annual income | People | Owns home | Sq. ft. | Age | Children | Education |
-|---:|---:|---:|---:|---:|---:|---|
-| $40,000 | 1 | 0 | 800 | 30 | 0 | High school or less |
-| $80,000 | 2 | 1 | 1,600 | 45 | 0 | Bachelor's |
-| $120,000 | 4 | 1 | 2,400 | 45 | 2 | Graduate |
+Choose and report values for the characteristics included in your model. Keep those values fixed across regions, changing only `Region`. Explain the predicted regional differences alongside their coefficient uncertainty.
 
-Conclude which customer information seems useful for describing historical value. Explain one plausible influence still missing from the models, and why profile predictions do not establish what sending an email would cause.
+Recommend whether region is useful for describing customer value. Identify one plausible influence still omitted, and explain why the regional comparisons do not establish what a change in location or an email campaign would cause.
 
 Upload your Word report to Canvas's **Exercise 7** assignment.
