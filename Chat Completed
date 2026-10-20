@@ -228,3 +228,9 @@ TERMINOLOGY UPDATE — 2026-10-15
 T1. Replace outreach with targeting in all current lecture slides, starter code, exercise instructions, solution and supporting materials, including the current Canvas copies. Decision: Approve — explicitly requested by Cam. Status: Verified.
 Verification: Inspected source and HTML diffs. Updated Rmd, named HTML, index.html and starter Qmd using terminology-only substitutions plus the required article correction. Source and starter R chunks are unchanged; HTML copies are identical; current text materials and PDF dictionary have no occurrences of the old term. Exercise instructions, solution and rubric required no replacement. Canvas HTML file 14075755 and starter file 14075758; existing module items 3298161 and 3298162 now reference the replacement files. Exercise 7 solution 14021293 matches the unchanged local solution. Downloaded replacement attachments match local SHA256 hashes; publication and file availability settings are preserved. Canvas exercise and grading descriptions contain no old term. Historical completion records and scratch backups were preserved.
 Scope audit: Checklist 1–3 and 5–8 Verified for this terminology change; 4 Not applicable (no practice-gap changes requested); 9–10 Blocked pending explicit GitHub publication authorization. Live Pages still contains the previous wording. No render, commit or push performed.
+
+SLIDE 31 ACCURACY UPDATE — 2026-10-20
+Slide: The Math Boils Down To...
+Change: Replace the raw-correlation description of omitted-variable bias with the sign rule using Z's relationship with Y holding X fixed. Clarify adjustment for additional predictors and that upward means more positive, not greater absolute magnitude.
+Decision: Approve — explicitly requested by Cam following the read-only accuracy review.
+Status: Verified — inspected the updated Rmd text and placement. No code changes or rendering performed.

@@ -13,7 +13,7 @@ Use this workbook to investigate the retailer's customer-value question during c
 
 ```
 
-## Getting Started | The Same Customer Records
+## Getting Started \| The Same Customer Records
 
 ```{r message=FALSE}
 customers <- read_csv("home_goods_customers.csv", show_col_types = FALSE)
@@ -25,6 +25,10 @@ Use the data dictionary to check units and timing. The observed outcome remains 
 
 Use the same customers for every model, so changes reflect the spending story rather than different samples.
 
+We will use the following variables today:
+
+PreviousSpend, HouseholdIncome, HouseholdSize, Homeowner, HomeSizeSqFt, Age, Education, ChildrenAtHome, SiteVisits30d, ProductViews30d
+
 ```{r}
 # Practice from Lectures 06–07:
 # Create customer_model_data with the same observed customers for all compared
@@ -33,7 +37,7 @@ Use the same customers for every model, so changes reflect the spending story ra
 
 ```
 
-There are **9,603 customers**. One unit is $1,000 of annual income or 100 square feet of home size, respectively.
+There are **9,603 customers**. One unit is \$1,000 of annual income or 100 square feet of home size, respectively.
 
 ## View the Customer Profiles
 
@@ -45,12 +49,12 @@ customer_model_data
 
 Lecture 07 used a binary `Homeowner` predictor. For a category with more than two levels, use one fewer indicator than levels and choose a **baseline**.
 
-| Education | Some college | Bachelor's | Graduate |
-|---|---:|---:|---:|
-| High school or less (baseline) | 0 | 0 | 0 |
-| Some college/associate | 1 | 0 | 0 |
-| Bachelor's | 0 | 1 | 0 |
-| Graduate | 0 | 0 | 1 |
+| Education                      | Some college | Bachelor's | Graduate |
+|--------------------------------|-------------:|-----------:|---------:|
+| High school or less (baseline) |            0 |          0 |        0 |
+| Some college/associate         |            1 |          0 |        0 |
+| Bachelor's                     |            0 |          1 |        0 |
+| Graduate                       |            0 |          0 |        1 |
 
 Each indicator slope compares that group with the baseline, holding other included predictors fixed. A single numeric code would impose equally spaced contributions.
 
@@ -67,7 +71,7 @@ customer_model_data <- customer_model_data |>
 
 An intercept plus an indicator for **every** category would be redundant: those indicators sum to one. Leaving out the baseline indicator avoids exact dependence.
 
-## Model 1 | A Broader Household Profile
+## Model 1 \| A Broader Household Profile
 
 Build on the income, household-size and homeownership models from Lectures 06–07. Add **home size, age and education** to describe differences in household needs and resources.
 
@@ -82,15 +86,7 @@ fit_profile <- linear_reg() |>
 
 These are associations with historical spending. We interpret each slope while holding the other included characteristics fixed.
 
-## Finding the Best *Hyperplane*
-
-Least squares still minimizes the **sum of squared residuals**. One predictor gives a line, two give a plane, and more give a hyperplane.
-
-<center>
-![](Figures/hyperplane.png){width=750px}
-</center>
-
-## Interpret the Parameters | Holding Others Fixed
+## Interpret the Parameters \| Holding Others Fixed
 
 - **Intercept:** expected spending when numeric predictors are zero and education is at the baseline. Check whether that profile is meaningful and represented in the data.
 - **Continuous slope:** expected dollar difference per unit, **holding other included predictors fixed**.
@@ -104,13 +100,13 @@ Least squares still minimizes the **sum of squared residuals**. One predictor gi
 
 ```
 
-## Interpret Model 1 | Three Examples
+## Interpret Model 1 \| Three Examples
 
 Holding the other included characteristics fixed:
 
-- **Income:** another $1,000 of annual income is associated with about **$2.05** more past spending.
-- **Household size:** another household member is associated with about **$38.06** more past spending.
-- **Graduate education:** about **$58.12** more past spending than the **high school or less** baseline.
+- **Income:** another \$1,000 of annual income is associated with about **\$2.05** more past spending.
+- **Household size:** another household member is associated with about **\$38.06** more past spending.
+- **Graduate education:** about **\$58.12** more past spending than the **high school or less** baseline.
 
 The intercept describes a profile with zero income, household size, home size and age. That profile is outside the observed ranges.
 
@@ -127,9 +123,7 @@ tidy(fit_profile, conf.int = TRUE) |>
   theme_minimal(base_size = 14)
 ```
 
-Lines show coefficient uncertainty. Predictor units differ, so raw slope magnitudes do not rank business importance.
-
-## Omitted Variable Bias | A Missing Part of the Story
+## Omitted Variable Bias \| A Missing Part of the Story
 
 An omitted variable can distort an included slope when it **affects the outcome** and **is related to an included predictor**.
 
@@ -153,7 +147,7 @@ customer_model_data |>
 
 Larger households tend to have more children. Could our household-size slope be capturing some of the relationship between children and spending?
 
-## Model 2 | Add Household Composition
+## Model 2 \| Add Household Composition
 
 ```{r}
 fit_composition <- linear_reg() |>
@@ -166,7 +160,7 @@ fit_composition <- linear_reg() |>
 
 We keep the same rows and other predictors. The new term lets us distinguish household size from the number of children.
 
-## Your Turn | What Happened to the Household-Size Slope?
+## Your Turn \| What Happened to the Household-Size Slope?
 
 Compare the household-size estimates before and after accounting for children. What changes in the spending story? How should we interpret household size and children when both are included?
 
@@ -175,17 +169,11 @@ Compare the household-size estimates before and after accounting for children. W
 
 ```
 
-## Multicollinearity | Overlapping Information
+## Multicollinearity \| Overlapping Information
 
-**Multicollinearity** means explanatory variables contain strongly overlapping information.
+If two X variables are **strongly** correlated, the model can struggle to differentiate their effects on the outcome.
 
-- Visits and views give the model fewer distinct comparisons with which to separate their slopes. Estimates can be unstable and intervals wider.
-- This differs from omitted-variable bias: correlation alone does not systematically bias a slope.
-- Exact dependence can make separate slopes impossible to estimate; moderate correlation is not automatically a reason to remove a variable.
-
-Inspect the relationships before interpreting each coefficient as a separate business driver. `cor()` is a useful starting check; combinations of several predictors can also overlap.
-
-## The Client's Next Question | Website Activity
+## The Client's Next Question \| Website Activity
 
 **"Could we learn more about customer value from how people use our website? We have both visits and product views."**
 
@@ -214,7 +202,7 @@ ggplot(customer_model_data, aes(x = SiteVisits30d, y = ProductViews30d)) +
   theme_minimal(base_size = 14)
 ```
 
-## Model 3 | Add Website Visits
+## Model 3 \| Add Website Visits
 
 ```{r}
 fit_visits <- linear_reg() |>
@@ -228,7 +216,7 @@ fit_visits <- linear_reg() |>
 
 We now ask whether visits provide information beyond the household characteristics already included.
 
-## Model 4 | Add Product Views Instead
+## Model 4 \| Add Product Views Instead
 
 ```{r}
 fit_views <- linear_reg() |>
@@ -242,7 +230,7 @@ fit_views <- linear_reg() |>
 
 Keep the same household characteristics and customers; replace website visits with product views.
 
-## Model 5 | Include Both Visits and Views
+## Model 5 \| Include Both Visits and Views
 
 ```{r}
 fit_browsing <- linear_reg() |>
@@ -254,7 +242,7 @@ fit_browsing <- linear_reg() |>
       data = customer_model_data)
 ```
 
-The visits slope now holds **product views fixed**, as well as the household characteristics. Is there enough distinct information to estimate that association precisely?
+This model estimates the associations between both previous spend and both site visits and product views.
 
 ## Compare Browsing Confidence Intervals {.smaller}
 
@@ -293,10 +281,10 @@ fit_browsing |>
 ## Choosing Between Collinear Variables {.smaller}
 
 - **Start with the business question.** Keep the measure that best represents the concept you want to explain: visits describe overall website activity; product views describe product browsing.
-- **Prefer reliable, practical measures.** Consider measurement quality, missing values, timing, collection cost and ease of interpretation.
+- **Prefer reliable, practical measures.** Consider measurement quality, missing values, collection cost and ease of interpretation.
 - **Do not choose by the smallest p-value or VIF alone.** Explain your decision in the context of the business question and recheck VIF after changing the model.
 
-## Model Fit | Did the Extra Information Help? {.smaller}
+## Model Fit \| Did the Extra Information Help? {.smaller}
 
 ```{r}
 bind_rows(
@@ -308,31 +296,28 @@ bind_rows(
   select(model, r.squared)
 ```
 
-Composition improves the description. Browsing adds almost nothing here: the composition model and all three browsing models have $R^2$ about **0.534**.
+Composition improves the model. Browsing adds almost nothing here: the composition model and all three browsing models have $R^2$ about **0.534**.
 
-Adding predictors cannot lower $R^2$ on the same rows. Visits-only and views-only are alternatives; neither adds a predictor to the other. More columns do not automatically give more useful insight.
+More variables do not automatically improve the model.
 
-## Considerations | Start with a Plausible Story
-
-- Check units, timing, and relationships. A variable that is a function of another may be redundant.
-- Consider omitted influences that affect both the outcome and included predictors.
-- Use uncertainty and model comparisons together; significance alone is not a reason to include or exclude a variable.
-- Before recommending an intervention, explain why the design addresses alternative stories.
-
-## Live Coding | A Useful Targeting Segment
+## Live Coding \| A Useful Targeting Segment
 
 Leadership wants a practical description of **high-value households** and a recommendation about which customer information to collect next.
 
-What should "high-value" mean? What evidence would make a segment useful? What might still be missing from our spending story, and how would we explain uncertainty to the client?
+What should "high-value" mean? What evidence would make a segment useful?
 
-Develop an analysis and a recommendation, including the limits of what it tells us about a targeting campaign.
+Let's reason through potential omitted variable bias: What might still be missing from our spending story, and how could that affect our estimate(s)?
+
+Let's also check the VIFs and ensure we are getting precise estimates.
+
+What does a high-value household look like? What does this analysis tell us about whether targeting will be successful?
 
 ```{r}
-# Develop the class's analysis and record the agreed assumptions.
+
 
 ```
 
-## Exercise 7 | Regional Spending Differences
+## Exercise 7 \| Regional Spending Differences
 
 The retailer asks: **Do customers in different regions spend differently, and do those differences persist after accounting for household characteristics?**
 
@@ -342,7 +327,7 @@ Compare **two to three models** that account for regions and some demographic ch
 
 Use the same customers for each comparison and report the sample size. Use clear units, such as thousands of dollars for income.
 
-## Exercise 7 | Evidence for the Client {.smaller}
+## Exercise 7 \| Evidence for the Client {.smaller}
 
 Submit a Word report rendered from Quarto with your code, results and interpretation. Include:
 
@@ -351,7 +336,7 @@ Submit a Word report rendered from Quarto with your code, results and interpreta
 - A comparison of the regional estimates before and after accounting for household characteristics. Explain what changes, how omitted variables could affect the comparison, and what the intervals tell you.
 - A check for multicollinearity using VIF after fitting your models. Explain any concerns and justify one decision to include or exclude a candidate variable.
 
-## Exercise 7 | Compare the Same Household Across Regions
+## Exercise 7 \| Compare the Same Household Across Regions
 
 Use your preferred model to predict spending in **all four regions** for a household with **characteristic values of your choosing**.
 

@@ -16,17 +16,29 @@ output:
 
 ## Where Are We in the Workflow?
 
-Lectures 06–07 **built, fit, evaluated, and predicted** historical spending. Today we revisit **consider** and **build**: does our model tell a plausible story?
+- Unit 1 Tasks
+  - Import and clean data
+  - Exploratory analysis (visualizations) "What preliminary evidence can I uncover about the relationship between [income] and [spending]?"
+- Unit 2 Tasks
+  - "Build" a model: decide which variables are likely associated with the outcome, and what those associations might be
+  - Fit the model (estimates the coefficients)
+  - Evaluate the coefficient estimates: look at confidence intervals to determine (1) whether they suggest a relationship, and (2) whether that relationship is significant in practice
+  - Predict for customer profiles: what outcome values does the model predict for different consumer profiles?
+  
+## Where Are We in the Workflow?
 
-<center>
-![](Figures/workflow-inference_build.png){width=800px}
-</center>
+- Unit 1 Tasks
+  - Import and clean data
+  - Exploratory analysis (visualizations) "What preliminary evidence can I uncover about the relationship between [income] and [spending]?"
+- Unit 2 Tasks
+  - **"Build" a model: decide which variables are likely associated with the outcome, and what those associations might be**
+  - Fit the model (estimates the coefficients)
+  - Evaluate the coefficient estimates: look at confidence intervals to determine (1) whether they suggest a relationship, and (2) whether that relationship is significant in practice
+  - Predict for customer profiles: what outcome values does the model predict for different consumer profiles?
 
 ## Client Brief | Understand Customer Value
 
 The home-goods retailer wants to understand **which household characteristics distinguish higher-spending customers**, and whether **website activity adds useful information** for planning targeting.
-
-- Which characteristics belong in a plausible spending story?
 
 Our outcome is `PreviousSpend`: spending at this retailer over the previous 12 months.
 
@@ -273,6 +285,16 @@ The slope falls from about **$38 to $28** per household member. With the number 
 
 With household size fixed, another child is associated with about **$29** more spending.
 
+## How Does This Change Your Recommendation?
+
+Before: target customers with larger household sizes, as one additional household member is associated with $38 in additional spending.
+
+## How Does This Change Your Recommendation?
+
+Before: target customers with larger household sizes, as one additional household member is associated with $38 in additional spending.
+
+After (more nuanced): larger households are still associated with additional spending, but an additional child is associated with a **larger** increase in spending than an additional adult.
+
 ## Recommendations for Handling Omitted Variables
 
 - Ask what a variable's coefficient might be standing in for: are there other variables that could be correlated with one of your independent variables *and* your outcome?
@@ -296,6 +318,12 @@ The bias depends on two relationships:
 **Same signs:** positive bias. **Opposite signs:** negative bias.
 
 For household size ($X$) and children ($Z$), both relationships are positive, so omitting children pushes the household-size coefficient **upward**.
+
+## The Math Boils Down To...
+
+If $Z$'s relationship with $X$ and its relationship with $Y$, **holding $X$ fixed**, have the **same sign**, omitting $Z$ pushes the coefficient on $X$ **upward**.
+
+If they have **opposite signs**, it pushes the coefficient **downward**.
 
 ## Problem 2: Multicollinearity | Overlapping Information
 
@@ -372,7 +400,7 @@ fit_browsing <- linear_reg() |>
       data = customer_model_data)
 ```
 
-The visits slope now holds **product views fixed**, as well as the household characteristics. But, there may not be enough distinct information to estimate that association precisely.
+This model estimates the associations between both previous spend and both site visits and product views.
 
 ## Compare Browsing Confidence Intervals {.smaller}
 
@@ -409,7 +437,7 @@ fit_browsing |>
 ## Choosing Between Collinear Variables {.smaller}
 
 - **Start with the business question.** Keep the measure that best represents the concept you want to explain: visits describe overall website activity; product views describe product browsing.
-- **Prefer reliable, practical measures.** Consider measurement quality, missing values, timing, collection cost and ease of interpretation.
+- **Prefer reliable, practical measures.** Consider measurement quality, missing values, collection cost and ease of interpretation.
 - **Do not choose by the smallest p-value or VIF alone.** Explain your decision in the context of the business question and recheck VIF after changing the model.
 
 ## Assess Model Fit: Did the Extra Information Help? {.smaller}
@@ -424,17 +452,19 @@ bind_rows(
   select(model, r.squared)
 ```
 
-Composition improves the description. Browsing adds almost nothing here: the composition model and all three browsing models have $R^2$ about **0.534** (More columns do not automatically give more useful insight).
+Composition improves the model. Browsing adds almost nothing here: the composition model and all three browsing models have $R^2$ about **0.534** (More variables do not automatically give more useful insight).
 
 ## Live Coding | A Useful Targeting Segment
 
 Leadership wants a practical description of **high-value households** and a recommendation about which customer information to collect next.
 
-What should "high-value" mean? What evidence would make a segment useful? 
+What should "high-value" mean? What evidence would make a segment useful?
 
-What might still be missing from our spending story, and how would we explain uncertainty to the client?
+Let's reason through potential omitted variable bias: What might still be missing from our spending story, and how could that affect our estimate(s)?
 
-Develop an analysis and a recommendation, including the limits of what it tells us about a targeting campaign.
+Let's also check the VIFs and ensure we are getting precise estimates.
+
+What does a high-value household look like? What does this analysis tell us about whether targeting will be successful?
 
 ## Wrapping Up | What We Learned for the Client
 
