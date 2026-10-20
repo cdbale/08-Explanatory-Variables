@@ -24,7 +24,7 @@ Lectures 06–07 **built, fit, evaluated, and predicted** historical spending. T
 
 ## Client Brief | Understand Customer Value
 
-The home-goods retailer wants to understand **which household characteristics distinguish higher-spending customers**, and whether **website activity adds useful information** for planning outreach.
+The home-goods retailer wants to understand **which household characteristics distinguish higher-spending customers**, and whether **website activity adds useful information** for planning targeting.
 
 - Which characteristics belong in a plausible spending story?
 
@@ -426,7 +426,7 @@ bind_rows(
 
 Composition improves the description. Browsing adds almost nothing here: the composition model and all three browsing models have $R^2$ about **0.534** (More columns do not automatically give more useful insight).
 
-## Live Coding | A Useful Outreach Segment
+## Live Coding | A Useful Targeting Segment
 
 Leadership wants a practical description of **high-value households** and a recommendation about which customer information to collect next.
 
@@ -434,7 +434,7 @@ What should "high-value" mean? What evidence would make a segment useful?
 
 What might still be missing from our spending story, and how would we explain uncertainty to the client?
 
-Develop an analysis and a recommendation, including the limits of what it tells us about an outreach campaign.
+Develop an analysis and a recommendation, including the limits of what it tells us about a targeting campaign.
 
 ## Wrapping Up | What We Learned for the Client
 

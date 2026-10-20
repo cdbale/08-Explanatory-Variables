@@ -319,13 +319,13 @@ Adding predictors cannot lower $R^2$ on the same rows. Visits-only and views-onl
 - Use uncertainty and model comparisons together; significance alone is not a reason to include or exclude a variable.
 - Before recommending an intervention, explain why the design addresses alternative stories.
 
-## Live Coding | A Useful Outreach Segment
+## Live Coding | A Useful Targeting Segment
 
 Leadership wants a practical description of **high-value households** and a recommendation about which customer information to collect next.
 
 What should "high-value" mean? What evidence would make a segment useful? What might still be missing from our spending story, and how would we explain uncertainty to the client?
 
-Develop an analysis and a recommendation, including the limits of what it tells us about an outreach campaign.
+Develop an analysis and a recommendation, including the limits of what it tells us about a targeting campaign.
 
 ```{r}
 # Develop the class's analysis and record the agreed assumptions.
