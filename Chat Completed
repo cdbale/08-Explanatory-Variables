@@ -234,3 +234,11 @@ Slide: The Math Boils Down To...
 Change: Replace the raw-correlation description of omitted-variable bias with the sign rule using Z's relationship with Y holding X fixed. Clarify adjustment for additional predictors and that upward means more positive, not greater absolute magnitude.
 Decision: Approve — explicitly requested by Cam following the read-only accuracy review.
 Status: Verified — inspected the updated Rmd text and placement. No code changes or rendering performed.
+
+
+PUBLICATION UPDATE — 2026-10-20
+TERMINOLOGY UPDATE — 2026-10-15
+T2. Publish updated slides to GitHub Pages and verify the Canvas slide hyperlink. Decision: Pending express GitHub submission authorization. Status: Blocked — awaiting GitHub permission.
+Decision update: Approved — Cam explicitly requested committing and pushing all changes and refreshing Canvas through the Chrome browser plugin.
+Status update: Verified.
+Verification: All five modified lecture files committed and pushed as 9616d8d709600fae74d81ae235642d20a4ad043e on main. Remote main matches. Named HTML and index.html are identical; live GitHub Pages HTML SHA256 matches local HTML: 04f3e1e78eede355919204a762a1d089c0f2269cfcfd47e436687aedf03b0a9d. Canvas 38688, module item 3180665, now links to https://cdbale.github.io/08-Explanatory-Variables/?v=9616d8d709600fae74d81ae235642d20a4ad043e. Saved link inspected through Chrome, followed from Canvas and verified to show the new 46-slide deck. All 20 starter chunks parse. No render performed.
